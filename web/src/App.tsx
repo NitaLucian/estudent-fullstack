@@ -11,6 +11,8 @@ import GrupePage from './pages/GrupePage'
 import LoginPage from './pages/LoginPage'
 import NotePage from './pages/NotePage'
 import NotFoundPage from './pages/NotFoundPage'
+import ParolaNouaPage from './pages/ParolaNouaPage'
+import ParolaUitataPage from './pages/ParolaUitataPage'
 import ProfesoriPage from './pages/ProfesoriPage'
 import ProfesorPage from './pages/ProfesorPage'
 import SpecializariPage from './pages/SpecializariPage'
@@ -28,6 +30,8 @@ export default function App() {
   return (
     <Routes>
       <Route path="login" element={<LoginPage />} />
+      <Route path="parola-uitata" element={<ParolaUitataPage />} />
+      <Route path="parola-noua" element={<ParolaNouaPage />} />
       <Route element={<RutaProtejata />}>
         <Route element={<Layout />}>
           {/* orice utilizator autentificat */}

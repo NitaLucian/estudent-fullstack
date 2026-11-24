@@ -1,7 +1,12 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import * as argon2 from 'argon2';
 import { AniUniversitariService } from '../ani/ani-universitari.service.js';
+import { tokenAleator } from '../auth/amprenta.js';
 import type { UtilizatorJwt } from '../auth/auth.decorators.js';
+import { ParoleService } from '../auth/parole.service.js';
 import { Prisma } from '../generated/prisma/client.js';
+import { CONT_CREAT, ContCreat } from '../notificari/evenimente.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { CreateStudentDto } from './dto/create-student.dto.js';
 import { ListaStudentiDto } from './dto/lista-studenti.dto.js';
@@ -55,6 +60,8 @@ export class StudentiService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly ani: AniUniversitariService,
+    private readonly parole: ParoleService,
+    private readonly evenimente: EventEmitter2,
   ) {}
 
   // Ce studenți are voie să vadă utilizatorul (autorizare la nivel de resursă):
@@ -159,6 +166,9 @@ export class StudentiService {
       const an = await this.ani.curent();
       inscrieri = { create: { grupaId: date.grupaId, anUniversitarId: an.id } };
     }
+    // Odată cu studentul se creează și contul lui de acces. Parola inițială este aleatoare
+    // și necunoscută oricui: studentul își alege parola din legătura primită pe email.
+    const parolaHash = await argon2.hash(tokenAleator());
     const student = await this.prisma.student.create({
       data: {
         nrMatricol: date.nrMatricol,
@@ -167,8 +177,13 @@ export class StudentiService {
         email: date.email,
         dataNasterii: laData(date.dataNasterii),
         inscrieri,
+        utilizator: { create: { email: date.email.toLowerCase(), rol: 'STUDENT', parolaHash } },
       },
+      include: { utilizator: true },
     });
+    const token = await this.parole.creeazaToken(student.utilizator!.id, 'SETARE');
+    // anunțăm evenimentul; emailul îl trimite modulul de notificări, în fundal
+    this.evenimente.emit(CONT_CREAT, new ContCreat(student.email, `${student.prenume} ${student.nume}`, token));
     return this.findOne(student.id);
   }
 

@@ -5,7 +5,7 @@ bază de date PostgreSQL în Docker (`docker-compose.yml`).
 
 ## Prima pornire
 
-    docker compose up -d          # PostgreSQL (portul 5433) și stocarea de fișiere S3 (portul 8333)
+    docker compose up -d          # PostgreSQL (5433), stocarea S3 (8333), emailul de test (8025)
 
 Backend (primul terminal):
 
@@ -25,6 +25,7 @@ Frontend (al doilea terminal):
 - Aplicația: http://localhost:5173
 - API: http://localhost:3000/api/health
 - Documentația API (Swagger): http://localhost:3000/api/docs
+- Emailurile trimise de aplicație (Mailpit): http://localhost:8025
 
 ## Conturi de test (create de seed)
 

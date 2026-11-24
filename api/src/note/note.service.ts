@@ -1,6 +1,8 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { AniUniversitariService } from '../ani/ani-universitari.service.js';
 import type { UtilizatorJwt } from '../auth/auth.decorators.js';
+import { NOTA_SALVATA, NotaSalvata } from '../notificari/evenimente.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { StudentiService } from '../studenti/studenti.service.js';
 import { SeteazaNotaDto } from './dto/seteaza-nota.dto.js';
@@ -31,6 +33,7 @@ export class NoteService {
     private readonly prisma: PrismaService,
     private readonly ani: AniUniversitariService,
     private readonly studenti: StudentiService,
+    private readonly evenimente: EventEmitter2,
   ) {}
 
   // Regula de business: un profesor lucrează doar cu catalogul disciplinelor pe care
@@ -88,7 +91,7 @@ export class NoteService {
     if (!urmeaza) throw new BadRequestException('Studentul nu urmează această disciplină în anul curent');
 
     const data = date.data ? new Date(date.data) : new Date();
-    return this.prisma.$transaction(async (tx) => {
+    const { nota, schimbata } = await this.prisma.$transaction(async (tx) => {
       const veche = await tx.nota.findUnique({ where: { inscriereId_disciplinaId: { inscriereId, disciplinaId } } });
       const nota = await tx.nota.upsert({
         where: { inscriereId_disciplinaId: { inscriereId, disciplinaId } },
@@ -96,13 +99,17 @@ export class NoteService {
         create: { inscriereId, disciplinaId, valoare: date.valoare, data, modificatDeId: u.id },
         select: selectNota,
       });
-      if (veche?.valoare !== date.valoare) {
+      const schimbata = veche?.valoare !== date.valoare;
+      if (schimbata) {
         await tx.istoricNota.create({
           data: { inscriereId, disciplinaId, valoareVeche: veche?.valoare ?? null, valoareNoua: date.valoare, utilizatorId: u.id },
         });
       }
-      return nota;
+      return { nota, schimbata };
     });
+    // după COMMIT: studentul primește un email doar dacă nota chiar s-a schimbat
+    if (schimbata) this.evenimente.emit(NOTA_SALVATA, new NotaSalvata(inscriereId, disciplinaId, date.valoare));
+    return nota;
   }
 
   async sterge(disciplinaId: number, inscriereId: number, u: UtilizatorJwt) {

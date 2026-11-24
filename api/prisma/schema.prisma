@@ -180,6 +180,7 @@ model Utilizator {
   noteModificate      Nota[]
   istoricNote         IstoricNota[]
   documenteIncarcate  Document[]
+  tokenuriParola      TokenParola[]
 
   @@map("utilizatori")
 }
@@ -249,4 +250,28 @@ model Document {
 
   @@index([studentId])
   @@map("documente")
+}
+
+// Scopul unui token de parolă
+enum ScopToken {
+  SETARE // contul tocmai a fost creat: utilizatorul își alege prima parolă
+  RESETARE // utilizatorul și-a uitat parola
+
+  @@map("scop_token")
+}
+
+// Un token trimis prin email pentru setarea sau resetarea parolei.
+// Ca la sesiuni, păstrăm doar amprenta (hash-ul) lui; se folosește o singură dată.
+model TokenParola {
+  id           Int        @id @default(autoincrement())
+  utilizatorId Int        @map("utilizator_id")
+  utilizator   Utilizator @relation(fields: [utilizatorId], references: [id], onDelete: Cascade)
+  tokenHash    String     @unique @map("token_hash")
+  scop         ScopToken
+  expiraLa     DateTime   @map("expira_la") @db.Timestamptz(3)
+  folositLa    DateTime?  @map("folosit_la") @db.Timestamptz(3)
+  creatLa      DateTime   @default(now()) @map("creat_la") @db.Timestamptz(3)
+
+  @@index([utilizatorId])
+  @@map("tokenuri_parola")
 }

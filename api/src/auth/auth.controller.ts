@@ -5,6 +5,8 @@ import type { CookieOptions, Request, Response } from 'express';
 import { Public, UtilizatorCurent, type UtilizatorJwt } from './auth.decorators.js';
 import { RaspunsAutentificare, UtilizatorAutentificat } from './auth.entity.js';
 import { AuthService, type Sesiune } from './auth.service.js';
+import { ParolaNouaDto, ParolaUitataDto } from './dto/parola.dto.js';
+import { ParoleService } from './parole.service.js';
 import { LoginDto } from './dto/login.dto.js';
 
 const COOKIE = 'refresh';
@@ -15,6 +17,7 @@ const COOKIE = 'refresh';
 export class AuthController {
   constructor(
     private readonly auth: AuthService,
+    private readonly parole: ParoleService,
     private readonly config: ConfigService,
   ) {}
 
@@ -58,6 +61,22 @@ export class AuthController {
   async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response): Promise<void> {
     await this.auth.deconecteaza(req.cookies?.[COOKIE]);
     res.clearCookie(COOKIE, { path: '/api/auth' });
+  }
+
+  // „Am uitat parola”: răspunsul este mereu 204, indiferent dacă adresa are cont
+  @Public()
+  @Post('parola-uitata')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  parolaUitata(@Body() date: ParolaUitataDto): Promise<void> {
+    return this.parole.cereResetare(date.email);
+  }
+
+  // Parola aleasă din legătura primită pe email (cont nou sau resetare)
+  @Public()
+  @Post('parola-noua')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  parolaNoua(@Body() date: ParolaNouaDto): Promise<void> {
+    return this.parole.seteazaParola(date.token, date.parola);
   }
 
   // GET /api/auth/eu – cine sunt (necesită token de acces)

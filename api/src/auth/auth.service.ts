@@ -2,9 +2,10 @@ import { Injectable, OnModuleInit, UnauthorizedException } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as argon2 from 'argon2';
-import { createHash, randomBytes } from 'node:crypto';
+import { randomBytes } from 'node:crypto';
 import { Prisma } from '../generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { amprenta, tokenAleator } from './amprenta.js';
 import { UtilizatorAutentificat } from './auth.entity.js';
 import { LoginDto } from './dto/login.dto.js';
 
@@ -17,8 +18,6 @@ const cuNume = {
 // tipul unui utilizator citit cu include: cuNume (calculat de Prisma)
 type UtilizatorCuNume = Prisma.UtilizatorGetPayload<{ include: typeof cuNume }>;
 
-// sha256 al refresh token-ului: în baza de date păstrăm doar amprenta lui
-const amprenta = (token: string) => createHash('sha256').update(token).digest('hex');
 
 export interface Sesiune {
   accessToken: string;
@@ -104,7 +103,7 @@ export class AuthService implements OnModuleInit {
       sid: u.studentId,
       pid: u.profesorId,
     });
-    const refreshToken = randomBytes(32).toString('base64url');
+    const refreshToken = tokenAleator();
     const zile = this.config.get<number>('REFRESH_ZILE') ?? 7;
     await this.prisma.sesiuneRefresh.create({
       data: {

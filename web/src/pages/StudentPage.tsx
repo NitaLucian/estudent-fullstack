@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { Link, useNavigate, useParams } from 'react-router'
+import { Link, useLocation, useNavigate, useParams } from 'react-router'
 import { mesajeDin } from '../api/client'
 import {
   useAniUniversitari, useCreeazaInscriere, useGrupe, useStergeInscriere, useStergeStudent, useStudent,
@@ -14,6 +14,7 @@ import { formatData } from '../format'
 export default function StudentPage() {
   const id = Number(useParams().id)
   const navigate = useNavigate()
+  const mesaj = (useLocation().state as { mesaj?: string } | null)?.mesaj // trimis de pagina de adăugare
   const { data: student, error } = useStudent(id)
   const { data: grupe = [] } = useGrupe()
   const { data: ani = [] } = useAniUniversitari()
@@ -43,6 +44,7 @@ export default function StudentPage() {
   return (
     <>
       {!esteStudent && <p><Link to="/studenti">‹ Înapoi la listă</Link></p>}
+      {mesaj && <p className="mesaj succes">{mesaj}</p>}
       <MesajEroare mesaje={erori} />
       {student && (
         <>

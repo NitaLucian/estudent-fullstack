@@ -20,7 +20,8 @@ export default function StudentFormPage() {
 
   async function salveaza(date: StudentDate) {
     const salvat = await salvare.mutateAsync({ id, corp: date })
-    navigate(`/studenti/${salvat.id}`)
+    // la adăugare, serverul a creat și contul, iar studentul a primit invitația pe email
+    navigate(`/studenti/${salvat.id}`, { state: id ? undefined : { mesaj: `Contul a fost creat; ${salvat.email} a primit pe email legătura pentru alegerea parolei.` } })
   }
 
   // valorile de pornire ale formularului

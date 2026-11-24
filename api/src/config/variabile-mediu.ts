@@ -1,5 +1,5 @@
 import { plainToInstance, Type } from 'class-transformer';
-import { IsBooleanString, IsInt, IsNotEmpty, IsOptional, IsString, Max, Min, MinLength, validateSync } from 'class-validator';
+import { IsBooleanString, IsIn, IsInt, IsNotEmpty, IsOptional, IsString, IsUrl, Max, Min, MinLength, ValidateIf, validateSync } from 'class-validator';
 
 // Variabilele de mediu de care are nevoie backendul. Dacă una obligatorie lipsește
 // sau are o valoare greșită, aplicația NU pornește (e mai bine să afli imediat).
@@ -54,6 +54,35 @@ class VariabileMediu {
   @IsString()
   @IsNotEmpty({ message: 'S3_SECRET_KEY lipsește' })
   S3_SECRET_KEY: string;
+
+  // Emailul: „smtp” (Mailpit local sau serverul SMTP al unui furnizor) sau „brevo” (API HTTP)
+  @IsOptional()
+  @IsIn(['smtp', 'brevo'], { message: 'EMAIL_FURNIZOR este smtp sau brevo' })
+  EMAIL_FURNIZOR: string = 'smtp';
+
+  @IsOptional()
+  @IsString()
+  EMAIL_EXPEDITOR: string = 'eStudent <no-reply@estudent.local>';
+
+  @IsOptional()
+  @IsString()
+  SMTP_HOST: string = 'localhost';
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  SMTP_PORT: number = 1025;
+
+  // cheia API este obligatorie doar dacă furnizorul ales este brevo
+  @ValidateIf((v: VariabileMediu) => v.EMAIL_FURNIZOR === 'brevo')
+  @IsString()
+  @IsNotEmpty({ message: 'BREVO_API_KEY lipsește (EMAIL_FURNIZOR=brevo)' })
+  BREVO_API_KEY?: string;
+
+  // adresa aplicației web, pentru legăturile din emailuri
+  @IsOptional()
+  @IsUrl({ require_tld: false }, { message: 'APP_URL trebuie să fie o adresă web' })
+  APP_URL: string = 'http://localhost:5173';
 }
 
 // Funcția primită de ConfigModule: verifică variabilele citite din mediu și din .env

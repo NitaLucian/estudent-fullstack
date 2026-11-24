@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { Navigate, useLocation, useNavigate } from 'react-router'
+import { Link, Navigate, useLocation, useNavigate } from 'react-router'
 import { mesajeDin } from '../api/client'
 import { useAuth } from '../auth/context'
 import MesajEroare from '../components/MesajEroare'
@@ -51,6 +51,7 @@ export default function LoginPage() {
         </label>
         <MesajEroare mesaje={erori} />
         <button type="submit" disabled={seTrimite}>{seTrimite ? 'Se verifică…' : 'Intră în cont'}</button>
+        <Link to="/parola-uitata">Ați uitat parola?</Link>
       </form>
     </div>
   )

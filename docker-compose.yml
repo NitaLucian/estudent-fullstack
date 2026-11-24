@@ -26,6 +26,16 @@ services:
       - estudent-fisiere:/data
       - ./docker/s3.json:/etc/seaweedfs/s3.json:ro   # cheile de acces (doar pentru dezvoltare)
 
+  # Server de email pentru dezvoltare: primește TOATE emailurile trimise de aplicație
+  # și le arată într-o pagină web (http://localhost:8025). Nu trimite nimic mai departe.
+  email:
+    image: axllent/mailpit:v1.34.0
+    container_name: estudent-email
+    restart: unless-stopped
+    ports:
+      - "1025:1025"   # SMTP: aici trimite aplicația
+      - "8025:8025"   # interfața web în care citim emailurile
+
 volumes:
   estudent-pgdata:
   estudent-fisiere:
