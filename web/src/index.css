@@ -124,6 +124,8 @@ button:disabled { opacity: 0.6; cursor: default; }
 /* utilizatorul autentificat, în dreapta barei de sus */
 .cont { margin-left: auto; display: flex; align-items: center; gap: 0.75rem; }
 .cont small { opacity: 0.8; }
+.cont a { color: #fff; text-decoration: none; }
+.cont a:hover { text-decoration: underline; }
 
 /* pagina de autentificare */
 .pagina-login { min-height: 100vh; display: grid; place-items: center; padding: 1rem; }

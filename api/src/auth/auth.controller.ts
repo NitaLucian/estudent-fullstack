@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req, Res } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Patch, Post, Req, Res } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ApiTags } from '@nestjs/swagger';
 import type { CookieOptions, Request, Response } from 'express';
@@ -6,6 +6,7 @@ import { Public, UtilizatorCurent, type UtilizatorJwt } from './auth.decorators.
 import { RaspunsAutentificare, UtilizatorAutentificat } from './auth.entity.js';
 import { AuthService, type Sesiune } from './auth.service.js';
 import { LoginDto } from './dto/login.dto.js';
+import { SchimbaParolaDto } from './dto/schimba-parola.dto.js';
 
 const COOKIE = 'refresh';
 
@@ -64,5 +65,16 @@ export class AuthController {
   @Get('eu')
   eu(@UtilizatorCurent() utilizator: UtilizatorJwt): Promise<UtilizatorAutentificat> {
     return this.auth.profil(utilizator.id);
+  }
+
+  // PATCH /api/auth/parola – schimbarea parolei utilizatorului autentificat
+  @Patch('parola')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  schimbaParola(
+    @UtilizatorCurent() utilizator: UtilizatorJwt,
+    @Body() date: SchimbaParolaDto,
+    @Req() req: Request,
+  ): Promise<void> {
+    return this.auth.schimbaParola(utilizator.id, date, req.cookies?.[COOKIE]);
   }
 }

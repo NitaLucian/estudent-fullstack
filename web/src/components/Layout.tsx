@@ -1,4 +1,4 @@
-import { NavLink, Outlet } from 'react-router'
+import { Link, NavLink, Outlet } from 'react-router'
 import { useAuth } from '../auth/context'
 
 // Variabilele de mediu ale frontendului: doar cele cu prefixul VITE_ ajung în codul din browser.
@@ -34,9 +34,9 @@ export default function Layout() {
         </nav>
         {utilizator && (
           <div className="cont">
-            <span>
+            <Link to="/cont">
               {utilizator.nume} <small>({ROLURI[utilizator.rol]})</small>
-            </span>
+            </Link>
             <button className="mic secundar" onClick={logout}>Ieșire</button>
           </div>
         )}

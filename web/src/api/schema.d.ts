@@ -84,6 +84,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/auth/parola": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["AuthController_schimbaParola"];
+        trace?: never;
+    };
     "/api/ani-universitari": {
         parameters: {
             query?: never;
@@ -406,6 +422,10 @@ export interface components {
             /** @description Token-ul de acces (JWT), trimis apoi în antetul Authorization: Bearer ... */
             accessToken: string;
             utilizator: components["schemas"]["UtilizatorAutentificat"];
+        };
+        SchimbaParolaDto: {
+            parolaVeche: string;
+            parolaNoua: string;
         };
         NumarInscrieri: {
             inscrieri: number;
@@ -796,6 +816,27 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["UtilizatorAutentificat"];
                 };
+            };
+        };
+    };
+    AuthController_schimbaParola: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SchimbaParolaDto"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

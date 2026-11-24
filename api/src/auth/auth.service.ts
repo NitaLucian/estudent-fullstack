@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, OnModuleInit, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as argon2 from 'argon2';
@@ -7,6 +7,7 @@ import { Prisma } from '../generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { UtilizatorAutentificat } from './auth.entity.js';
 import { LoginDto } from './dto/login.dto.js';
+import { SchimbaParolaDto } from './dto/schimba-parola.dto.js';
 
 // datele utilizatorului citite pentru răspunsuri
 const cuNume = {
@@ -86,6 +87,27 @@ export class AuthService implements OnModuleInit {
       where: { tokenHash: amprenta(refreshToken), revocataLa: null },
       data: { revocataLa: new Date() },
     });
+  }
+
+  // Schimbarea parolei: verificăm parola actuală, salvăm noul hash și închidem
+  // celelalte sesiuni (dacă parola a fost aflată de altcineva, acela este deconectat).
+  async schimbaParola(id: number, date: SchimbaParolaDto, refreshCurent: string | undefined) {
+    const u = await this.prisma.utilizator.findUnique({ where: { id } });
+    if (!u || !(await argon2.verify(u.parolaHash, date.parolaVeche))) {
+      throw new BadRequestException('Parola actuală nu este corectă');
+    }
+    if (date.parolaNoua === date.parolaVeche) {
+      throw new BadRequestException('Parola nouă trebuie să fie diferită de cea actuală');
+    }
+    const parolaHash = await argon2.hash(date.parolaNoua);
+    const pastrata = refreshCurent ? amprenta(refreshCurent) : '';
+    await this.prisma.$transaction([
+      this.prisma.utilizator.update({ where: { id }, data: { parolaHash } }),
+      this.prisma.sesiuneRefresh.updateMany({
+        where: { utilizatorId: id, revocataLa: null, tokenHash: { not: pastrata } },
+        data: { revocataLa: new Date() },
+      }),
+    ]);
   }
 
   async profil(id: number): Promise<UtilizatorAutentificat> {
