@@ -4,7 +4,7 @@ import type { UtilizatorJwt } from '../auth/auth.decorators.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { StudentiService } from '../studenti/studenti.service.js';
 import { SeteazaNotaDto } from './dto/seteaza-nota.dto.js';
-import { Catalog, DisciplinaCatalog, MedieAn, NotaScurta, SituatieScolara } from './nota.entity.js';
+import { Catalog, DisciplinaCatalog, MedieAn, ModificareNota, NotaScurta, SituatieScolara } from './nota.entity.js';
 
 const selectNota = { id: true, valoare: true, data: true, modificatLa: true } as const;
 const selectDisciplina = {
@@ -115,6 +115,31 @@ export class NoteService {
         data: { inscriereId, disciplinaId, valoareVeche: veche.valoare, valoareNoua: null, utilizatorId: u.id },
       });
     });
+  }
+
+  // Istoricul modificărilor notelor la o disciplină (cele mai noi întâi).
+  // Istoricul nu are relație spre înscrieri, așa că aflăm numele studenților separat.
+  async istoric(disciplinaId: number, u: UtilizatorJwt): Promise<ModificareNota[]> {
+    await this.verificaDreptul(disciplinaId, u);
+    const randuri = await this.prisma.istoricNota.findMany({
+      where: { disciplinaId },
+      include: { utilizator: { select: { email: true } } },
+      orderBy: { la: 'desc' },
+      take: 200,
+    });
+    const inscrieri = await this.prisma.inscriere.findMany({
+      where: { id: { in: randuri.map((r) => r.inscriereId) } },
+      select: { id: true, student: { select: { nume: true, prenume: true } } },
+    });
+    const nume = new Map(inscrieri.map((i) => [i.id, `${i.student.nume} ${i.student.prenume}`]));
+    return randuri.map((r) => ({
+      id: r.id,
+      la: r.la,
+      student: nume.get(r.inscriereId) ?? '?',
+      valoareVeche: r.valoareVeche,
+      valoareNoua: r.valoareNoua,
+      autor: r.utilizator.email,
+    }));
   }
 
   // Situația școlară: notele din toți anii și mediile fiecărui an universitar.

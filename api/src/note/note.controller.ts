@@ -3,7 +3,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { UtilizatorCurent, type UtilizatorJwt } from '../auth/auth.decorators.js';
 import { Roluri } from '../auth/roluri.guard.js';
 import { SeteazaNotaDto } from './dto/seteaza-nota.dto.js';
-import { Catalog, NotaScurta, SituatieScolara } from './nota.entity.js';
+import { Catalog, ModificareNota, NotaScurta, SituatieScolara } from './nota.entity.js';
 import { NoteService } from './note.service.js';
 
 // /api/note
@@ -20,6 +20,15 @@ export class NoteController {
   @Get('catalog/:disciplinaId')
   catalog(@Param('disciplinaId', ParseIntPipe) disciplinaId: number, @UtilizatorCurent() u: UtilizatorJwt): Promise<Catalog> {
     return this.service.catalog(disciplinaId, u);
+  }
+
+  @Roluri('ADMIN', 'PROFESOR')
+  @Get('catalog/:disciplinaId/istoric')
+  istoric(
+    @Param('disciplinaId', ParseIntPipe) disciplinaId: number,
+    @UtilizatorCurent() u: UtilizatorJwt,
+  ): Promise<ModificareNota[]> {
+    return this.service.istoric(disciplinaId, u);
   }
 
   // PUT: aceeași cerere repetată are același efect (idempotentă) – potrivit pentru „pune nota X”

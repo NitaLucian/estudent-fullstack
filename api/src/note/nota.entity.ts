@@ -66,3 +66,14 @@ export class SituatieScolara {
   note: NotaStudent[];
   medii: MedieAn[];
 }
+
+// O modificare din istoric (audit)
+export class ModificareNota {
+  id: number;
+  la: Date;
+  student: string;
+  valoareVeche: number | null;
+  valoareNoua: number | null;
+  /** Emailul celui care a făcut modificarea */
+  autor: string;
+}

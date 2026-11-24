@@ -388,6 +388,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/note/catalog/{disciplinaId}/istoric": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["NoteController_istoric"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/note/catalog/{disciplinaId}/{inscriereId}": {
         parameters: {
             query?: never;
@@ -778,6 +794,16 @@ export interface components {
             disciplina: components["schemas"]["DisciplinaCatalog"];
             anUniversitar: string;
             randuri: components["schemas"]["RandCatalog"][];
+        };
+        ModificareNota: {
+            id: number;
+            /** Format: date-time */
+            la: string;
+            student: string;
+            valoareVeche: number | null;
+            valoareNoua: number | null;
+            /** @description Emailul celui care a făcut modificarea */
+            autor: string;
         };
         SeteazaNotaDto: {
             valoare: number;
@@ -1691,6 +1717,27 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Catalog"];
+                };
+            };
+        };
+    };
+    NoteController_istoric: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                disciplinaId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModificareNota"][];
                 };
             };
         };

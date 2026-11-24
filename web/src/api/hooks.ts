@@ -313,3 +313,11 @@ export function useSituatie(studentId: number) {
     queryFn: () => date(client.GET('/api/note/student/{studentId}', { params: { path: { studentId } } })),
   })
 }
+
+export function useIstoricNote(disciplinaId: number, activ: boolean) {
+  return useQuery({
+    queryKey: ['catalog', disciplinaId, 'istoric'],
+    queryFn: () => date(client.GET('/api/note/catalog/{disciplinaId}/istoric', { params: { path: { disciplinaId } } })),
+    enabled: activ, // cerem istoricul doar când utilizatorul îl deschide
+  })
+}

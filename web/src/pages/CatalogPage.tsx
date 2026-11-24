@@ -2,6 +2,7 @@ import { Link, useParams } from 'react-router'
 import { mesajeDin } from '../api/client'
 import { useCatalog, useSeteazaNota, useStergeNota } from '../api/hooks'
 import CelulaNota from '../components/CelulaNota'
+import IstoricNote from '../components/IstoricNote'
 import MesajEroare from '../components/MesajEroare'
 import { formatData } from '../format'
 
@@ -58,6 +59,7 @@ export default function CatalogPage() {
         {randuri.length} studenți · {cuNota.length} note introduse · {promovati} promovați. Scrieți nota și apăsați
         Enter; un câmp golit șterge nota.
       </p>
+      <IstoricNote disciplinaId={disciplinaId} />
     </>
   )
 }
