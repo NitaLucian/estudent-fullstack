@@ -1,4 +1,4 @@
-import { IsInt, IsString, Matches, Max, Min } from 'class-validator';
+import { IsInt, IsOptional, IsString, Matches, Max, Min } from 'class-validator';
 
 export class CreateGrupaDto {
   @IsString({ message: 'Codul este obligatoriu' })
@@ -12,4 +12,11 @@ export class CreateGrupaDto {
 
   @IsInt({ message: 'Alegeți specializarea' })
   specializareId: number;
+
+  // opțional: dacă lipsește, baza de date pune valoarea implicită 30
+  @IsOptional()
+  @IsInt({ message: 'Capacitatea trebuie să fie un număr întreg' })
+  @Min(10, { message: 'Capacitatea este între 10 și 40 de studenți' })
+  @Max(40, { message: 'Capacitatea este între 10 și 40 de studenți' })
+  capacitate?: number;
 }

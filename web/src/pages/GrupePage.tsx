@@ -48,7 +48,7 @@ export default function GrupePage() {
     }
   }
 
-  const initialNou: GrupaDate = { cod: '', an: 1, specializareId: filtru }
+  const initialNou: GrupaDate = { cod: '', an: 1, capacitate: 30, specializareId: filtru }
 
   return (
     <>
@@ -88,6 +88,7 @@ export default function GrupePage() {
             <th>Cod</th>
             <th>Specializare</th>
             <th className="numar">An</th>
+            <th className="numar">Capacitate</th>
             <th className="actiuni">Acțiuni</th>
           </tr>
         </thead>
@@ -97,6 +98,7 @@ export default function GrupePage() {
               <td><strong>{g.cod}</strong></td>
               <td>{g.specializare.cod} – {g.specializare.denumire}</td>
               <td className="numar">{g.an}</td>
+              <td className="numar">{g.capacitate}</td>
               <td className="actiuni">
                 <button className="mic secundar" onClick={() => setFormular({ mod: 'modificare', grupa: g })}>
                   Modifică

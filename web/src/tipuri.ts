@@ -19,10 +19,11 @@ export interface Grupa {
   id: number
   cod: string
   an: number
+  capacitate: number
   specializareId: number
   specializare: Pick<Specializare, 'id' | 'cod' | 'denumire'>
 }
 
 // Datele trimise la creare/modificare: fără id și fără câmpurile calculate de server.
 export type SpecializareDate = Pick<Specializare, 'cod' | 'denumire'>
-export type GrupaDate = Pick<Grupa, 'cod' | 'an' | 'specializareId'>
+export type GrupaDate = Pick<Grupa, 'cod' | 'an' | 'capacitate' | 'specializareId'>

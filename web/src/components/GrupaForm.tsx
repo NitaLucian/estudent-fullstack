@@ -29,6 +29,7 @@ export default function GrupaForm({ initial, titlu, specializari, onSalveaza, on
       await onSalveaza({
         cod: date.cod.trim().toUpperCase(),
         an: date.an,
+        capacitate: date.capacitate,
         specializareId: date.specializareId,
       })
     } catch (e) {
@@ -63,6 +64,16 @@ export default function GrupaForm({ initial, titlu, specializari, onSalveaza, on
             <option key={an} value={an}>Anul {an}</option>
           ))}
         </select>
+      </label>
+      <label>
+        Capacitate (studenți)
+        <input
+          type="number"
+          min={10}
+          max={40}
+          value={date.capacitate}
+          onChange={(e) => schimba('capacitate', Number(e.target.value))}
+        />
       </label>
       <MesajEroare mesaje={erori} />
       <div className="butoane">

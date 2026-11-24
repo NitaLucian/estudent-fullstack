@@ -27,6 +27,7 @@ model Grupa {
   id             Int          @id @default(autoincrement())
   cod            String       @unique @db.VarChar(15)
   an             Int          @db.SmallInt // anul de studiu: 1–4
+  capacitate     Int          @default(30) @db.SmallInt // numărul maxim de studenți
   specializareId Int          @map("specializare_id")
   specializare   Specializare @relation(fields: [specializareId], references: [id], onDelete: Restrict)
 
