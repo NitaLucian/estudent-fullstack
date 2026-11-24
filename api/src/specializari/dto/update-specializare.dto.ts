@@ -1,4 +1,4 @@
-import { PartialType } from '@nestjs/mapped-types';
+import { PartialType } from '@nestjs/swagger';
 import { CreateSpecializareDto } from './create-specializare.dto.js';
 
 // La modificare (PATCH) toate câmpurile sunt opționale, dar păstrează aceleași reguli.

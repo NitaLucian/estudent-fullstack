@@ -1,55 +1,29 @@
-import { useEffect, useState } from 'react'
-import { citeste, creeaza, mesajeDin, modifica, sterge } from '../api'
+import { useState } from 'react'
+import { mesajeDin } from '../api/client'
+import { useAniStudiu, useGrupe, useSalveazaGrupa, useSpecializari, useStergeGrupa } from '../api/hooks'
 import GrupaForm from '../components/GrupaForm'
 import MesajEroare from '../components/MesajEroare'
-import type { AnStudiu, Grupa, GrupaDate, Specializare } from '../tipuri'
+import type { Grupa, GrupaDate } from '../tipuri'
 
 type StareFormular = { mod: 'ascuns' } | { mod: 'adaugare' } | { mod: 'modificare'; grupa: Grupa }
 
 export default function GrupePage() {
-  const [grupe, setGrupe] = useState<Grupa[]>([])
-  const [specializari, setSpecializari] = useState<Specializare[]>([])
-  const [ani, setAni] = useState<AnStudiu[]>([])
   const [filtru, setFiltru] = useState(0) // 0 = toate specializările
-  const [erori, setErori] = useState<string[]>([])
+  // cheia cererii conține filtrul: fiecare filtru are propria intrare în cache
+  const { data: grupe = [], error } = useGrupe(filtru || undefined)
+  const { data: specializari = [] } = useSpecializari()
+  const { data: ani = [] } = useAniStudiu()
+  const salvare = useSalveazaGrupa()
+  const stergere = useStergeGrupa()
   const [formular, setFormular] = useState<StareFormular>({ mod: 'ascuns' })
-  const [versiune, setVersiune] = useState(0)
-
-  // listele pentru filtru și formular se citesc o singură dată
-  useEffect(() => {
-    citeste<AnStudiu[]>('/api/ani-studiu').then(setAni).catch((e) => setErori(mesajeDin(e)))
-  }, [])
-  useEffect(() => {
-    citeste<Specializare[]>('/api/specializari')
-      .then(setSpecializari)
-      .catch((e) => setErori(mesajeDin(e)))
-  }, [])
-
-  // lista de grupe se recitește când se schimbă filtrul sau datele
-  useEffect(() => {
-    // filtrul ajunge la server ca parametru în URL: /api/grupe?specializareId=2
-    const url = filtru ? `/api/grupe?specializareId=${filtru}` : '/api/grupe'
-    citeste<Grupa[]>(url)
-      .then(setGrupe)
-      .catch((e) => setErori(mesajeDin(e)))
-  }, [filtru, versiune])
 
   async function salveaza(date: GrupaDate) {
-    if (formular.mod === 'modificare') await modifica(`/api/grupe/${formular.grupa.id}`, date)
-    else await creeaza('/api/grupe', date)
+    await salvare.mutateAsync({ id: formular.mod === 'modificare' ? formular.grupa.id : undefined, corp: date })
     setFormular({ mod: 'ascuns' })
-    setVersiune(versiune + 1)
   }
 
-  async function stergeGrupa(g: Grupa) {
-    if (!window.confirm(`Ștergeți grupa ${g.cod}?`)) return
-    try {
-      await sterge(`/api/grupe/${g.id}`)
-      setErori([])
-      setVersiune(versiune + 1)
-    } catch (e) {
-      setErori(mesajeDin(e))
-    }
+  function stergeGrupa(g: Grupa) {
+    if (window.confirm(`Ștergeți grupa ${g.cod}?`)) stergere.mutate(g.id)
   }
 
   const initialNou: GrupaDate = { cod: '', anStudiuId: ani[0]?.id ?? 0, specializareId: filtru }
@@ -85,7 +59,7 @@ export default function GrupePage() {
         />
       )}
 
-      <MesajEroare mesaje={erori} />
+      <MesajEroare mesaje={[...(error ? mesajeDin(error) : []), ...(stergere.error ? mesajeDin(stergere.error) : [])]} />
 
       <table className="tabel">
         <thead>

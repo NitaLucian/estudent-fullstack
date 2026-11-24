@@ -1,4 +1,5 @@
 import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../generated/prisma/client.js';
 
@@ -6,9 +7,10 @@ import { PrismaClient } from '../generated/prisma/client.js';
 // și o „injectează” în toate serviciile care o cer în constructor.
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
-  constructor() {
+  // adresa bazei de date vine din configurare (ConfigService), nu direct din process.env
+  constructor(config: ConfigService) {
     super({
-      adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL }),
+      adapter: new PrismaPg({ connectionString: config.getOrThrow<string>('DATABASE_URL') }),
     });
   }
 

@@ -1,67 +1,38 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useState, type FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
-import { citeste, creeaza, mesajeDin, sterge } from '../api'
+import { mesajeDin } from '../api/client'
+import {
+  useAniUniversitari, useCreeazaInscriere, useGrupe, useStergeInscriere, useStergeStudent, useStudent,
+} from '../api/hooks'
 import MesajEroare from '../components/MesajEroare'
 import { formatData } from '../format'
-import type { AnUniversitar, Grupa, StudentDetaliu } from '../tipuri'
 
 // Fișa unui student: /studenti/:id – datele personale și înscrierile pe ani universitari
 export default function StudentPage() {
-  const { id } = useParams()
+  const id = Number(useParams().id)
   const navigate = useNavigate()
-  const [student, setStudent] = useState<StudentDetaliu | null>(null)
-  const [grupe, setGrupe] = useState<Grupa[]>([])
-  const [ani, setAni] = useState<AnUniversitar[]>([])
+  const { data: student, error } = useStudent(id)
+  const { data: grupe = [] } = useGrupe()
+  const { data: ani = [] } = useAniUniversitari()
+  const stergereStudent = useStergeStudent()
+  const inscriere = useCreeazaInscriere()
+  const stergereInscriere = useStergeInscriere()
   const [grupaNoua, setGrupaNoua] = useState(0)
   const [anNou, setAnNou] = useState(0)
-  const [erori, setErori] = useState<string[]>([])
-  const [versiune, setVersiune] = useState(0)
-
-  useEffect(() => {
-    citeste<StudentDetaliu>(`/api/studenti/${id}`)
-      .then(setStudent)
-      .catch((e) => setErori(mesajeDin(e)))
-  }, [id, versiune])
-
-  useEffect(() => {
-    citeste<Grupa[]>('/api/grupe').then(setGrupe).catch((e) => setErori(mesajeDin(e)))
-    citeste<AnUniversitar[]>('/api/ani-universitari').then(setAni).catch((e) => setErori(mesajeDin(e)))
-  }, [])
 
   async function stergeStudentul() {
     if (!student || !window.confirm(`Ștergeți studentul ${student.nume} ${student.prenume}?`)) return
-    try {
-      await sterge(`/api/studenti/${student.id}`)
-      navigate('/studenti')
-    } catch (e) {
-      setErori(mesajeDin(e))
-    }
+    await stergereStudent.mutateAsync(id)
+    navigate('/studenti')
   }
 
-  async function inscrie(ev: FormEvent) {
+  function inscrie(ev: FormEvent) {
     ev.preventDefault()
-    try {
-      await creeaza('/api/inscrieri', {
-        studentId: Number(id),
-        grupaId: grupaNoua,
-        ...(anNou && { anUniversitarId: anNou }), // 0 = anul curent
-      })
-      setErori([])
-      setVersiune(versiune + 1)
-    } catch (e) {
-      setErori(mesajeDin(e))
-    }
+    inscriere.mutate({ studentId: id, grupaId: grupaNoua, ...(anNou && { anUniversitarId: anNou }) })
   }
 
-  async function stergeInscrierea(inscriereId: number) {
-    if (!window.confirm('Ștergeți această înscriere?')) return
-    try {
-      await sterge(`/api/inscrieri/${inscriereId}`)
-      setVersiune(versiune + 1)
-    } catch (e) {
-      setErori(mesajeDin(e))
-    }
-  }
+  // toate erorile paginii, într-o singură listă
+  const erori = [error, stergereStudent.error, inscriere.error, stergereInscriere.error].flatMap((e) => (e ? mesajeDin(e) : []))
 
   return (
     <>
@@ -99,10 +70,15 @@ export default function StudentPage() {
                 {student.inscrieri.map((i) => (
                   <tr key={i.id}>
                     <td>{i.anUniversitar.cod}{i.anUniversitar.curent && ' (curent)'}</td>
-                    <td><Link to={`/grupe`}>{i.grupa.cod}</Link> – {i.grupa.specializare.cod}</td>
-                    <td className="numar">{i.grupa.an}</td>
+                    <td>{i.grupa?.cod} – {i.grupa?.specializare.cod}</td>
+                    <td className="numar">{i.grupa?.an}</td>
                     <td className="actiuni">
-                      <button className="mic pericol" onClick={() => stergeInscrierea(i.id)}>Șterge</button>
+                      <button
+                        className="mic pericol"
+                        onClick={() => window.confirm('Ștergeți această înscriere?') && stergereInscriere.mutate(i.id)}
+                      >
+                        Șterge
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -121,7 +97,7 @@ export default function StudentPage() {
                   <option key={g.id} value={g.id}>{g.cod}</option>
                 ))}
               </select>
-              <button type="submit" disabled={!grupaNoua}>Înscrie</button>
+              <button type="submit" disabled={!grupaNoua || inscriere.isPending}>Înscrie</button>
             </form>
           </section>
         </>

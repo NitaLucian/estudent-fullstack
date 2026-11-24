@@ -1,15 +1,16 @@
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
-import { citeste, mesajeDin } from '../api'
+import { mesajeDin } from '../api/client'
+import { useGrupe, useSpecializari, useStudenti, type FiltreStudenti } from '../api/hooks'
 import MesajEroare from '../components/MesajEroare'
 import Paginare from '../components/Paginare'
 import Tabel, { type Coloana } from '../components/Tabel'
 import { formatData } from '../format'
 import { useDebounce } from '../hooks/useDebounce'
-import type { Grupa, Pagina, Specializare, Student } from '../tipuri'
+import type { Student } from '../tipuri'
 
 // O copie a parametrilor, cu un parametru schimbat. Orice filtru nou
-// ne întoarce la prima pagină (altfel am putea rămâne pe pagina 9 dintr-un rezultat de 2 pagini).
+// ne întoarce la prima pagină.
 function cuParametru(p: URLSearchParams, nume: string, valoare: string) {
   const noi = new URLSearchParams(p)
   if (valoare) noi.set(nume, valoare)
@@ -17,6 +18,9 @@ function cuParametru(p: URLSearchParams, nume: string, valoare: string) {
   if (nume !== 'pagina') noi.delete('pagina')
   return noi
 }
+
+// un număr din adresă sau undefined (parametrul lipsește)
+const numar = (text: string | null) => (text ? Number(text) : undefined)
 
 const coloane: Coloana<Student>[] = [
   { titlu: 'Nr. matricol', celula: (s) => s.nrMatricol },
@@ -28,66 +32,41 @@ const coloane: Coloana<Student>[] = [
 ]
 
 export default function StudentiPage() {
-  // Filtrele stau în adresa paginii (?cauta=...&pagina=2): pagina poate fi
-  // reîncărcată, salvată ca favorit sau trimisă altcuiva cu aceleași filtre.
+  // Filtrele stau în adresa paginii (?cauta=...&pagina=2)
   const [params, setParams] = useSearchParams()
-  const pagina = Number(params.get('pagina') ?? '1')
-  const specializareId = params.get('specializareId') ?? ''
-  const grupaId = params.get('grupaId') ?? ''
-  const ordonare = params.get('ordonare') ?? 'nume'
+  const filtre: FiltreStudenti = {
+    pagina: numar(params.get('pagina')),
+    cauta: params.get('cauta') ?? undefined,
+    specializareId: numar(params.get('specializareId')),
+    grupaId: numar(params.get('grupaId')),
+    ordonare: params.get('ordonare') === 'nrMatricol' ? 'nrMatricol' : undefined,
+  }
 
   const [text, setText] = useState(params.get('cauta') ?? '')
   const cauta = useDebounce(text)
 
-  const [rezultat, setRezultat] = useState<Pagina<Student> | null>(null)
-  const [specializari, setSpecializari] = useState<Specializare[]>([])
-  const [grupe, setGrupe] = useState<Grupa[]>([])
-  const [erori, setErori] = useState<string[]>([])
+  // Cererile: TanStack Query le face, le păstrează în cache și ignoră singur
+  // răspunsurile întârziate ale unor cereri mai vechi.
+  const { data: rezultat, error, isFetching } = useStudenti(filtre)
+  const { data: specializari = [] } = useSpecializari()
+  const { data: grupe = [] } = useGrupe(filtre.specializareId)
 
   // textul căutat ajunge în adresă abia după pauza de tastare
   useEffect(() => {
     setParams((p) => ((p.get('cauta') ?? '') === cauta ? p : cuParametru(p, 'cauta', cauta)), { replace: true })
   }, [cauta, setParams])
 
-  useEffect(() => {
-    citeste<Specializare[]>('/api/specializari').then(setSpecializari).catch((e) => setErori(mesajeDin(e)))
-  }, [])
-
-  // grupele din lista de filtrare depind de specializarea aleasă
-  useEffect(() => {
-    citeste<Grupa[]>(specializareId ? `/api/grupe?specializareId=${specializareId}` : '/api/grupe')
-      .then(setGrupe)
-      .catch((e) => setErori(mesajeDin(e)))
-  }, [specializareId])
-
-  // lista de studenți se recitește la orice schimbare a parametrilor din adresă
-  const interogare = params.toString()
-  useEffect(() => {
-    let activ = true // devine false dacă între timp a plecat o cerere mai nouă
-    citeste<Pagina<Student>>(`/api/studenti?${interogare}`)
-      .then((r) => {
-        if (activ) {
-          setRezultat(r)
-          setErori([])
-        }
-      })
-      .catch((e) => activ && setErori(mesajeDin(e)))
-    return () => {
-      activ = false
-    }
-  }, [interogare])
-
   return (
     <>
       <div className="titlu-pagina">
-        <h1>Studenți</h1>
+        <h1>Studenți {isFetching && <span className="nota">se actualizează…</span>}</h1>
         <Link className="buton" to="/studenti/nou">+ Adaugă student</Link>
       </div>
 
       <div className="bara-filtre">
         <input placeholder="Caută nume, matricol, email…" value={text} onChange={(e) => setText(e.target.value)} />
         <select
-          value={specializareId}
+          value={params.get('specializareId') ?? ''}
           onChange={(e) => setParams(cuParametru(cuParametru(params, 'grupaId', ''), 'specializareId', e.target.value))}
         >
           <option value="">toate specializările</option>
@@ -95,25 +74,25 @@ export default function StudentiPage() {
             <option key={s.id} value={s.id}>{s.cod}</option>
           ))}
         </select>
-        <select value={grupaId} onChange={(e) => setParams(cuParametru(params, 'grupaId', e.target.value))}>
+        <select value={params.get('grupaId') ?? ''} onChange={(e) => setParams(cuParametru(params, 'grupaId', e.target.value))}>
           <option value="">toate grupele</option>
           {grupe.map((g) => (
             <option key={g.id} value={g.id}>{g.cod}</option>
           ))}
         </select>
-        <select value={ordonare} onChange={(e) => setParams(cuParametru(params, 'ordonare', e.target.value))}>
+        <select value={params.get('ordonare') ?? 'nume'} onChange={(e) => setParams(cuParametru(params, 'ordonare', e.target.value))}>
           <option value="nume">ordonați după nume</option>
           <option value="nrMatricol">ordonați după nr. matricol</option>
         </select>
       </div>
 
-      <MesajEroare mesaje={erori} />
+      <MesajEroare mesaje={error ? mesajeDin(error) : []} />
 
       {rezultat && (
         <>
           <Tabel coloane={coloane} randuri={rezultat.date} cheie={(s) => s.id} gol="Niciun student nu corespunde filtrelor." />
           <Paginare
-            pagina={pagina}
+            pagina={rezultat.pagina}
             perPagina={rezultat.perPagina}
             total={rezultat.total}
             onPagina={(p) => setParams(cuParametru(params, 'pagina', String(p)))}

@@ -1,68 +1,46 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useState, type FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
-import { citeste, creeaza, mesajeDin, modifica, sterge } from '../api'
+import { mesajeDin } from '../api/client'
+import {
+  useAdaugaPredare, useDiscipline, useProfesor, useSalveazaProfesor, useStergePredare, useStergeProfesor,
+} from '../api/hooks'
 import MesajEroare from '../components/MesajEroare'
 import ProfesorForm from '../components/ProfesorForm'
 import { GRADE } from '../format'
-import type { Disciplina, ProfesorDate, ProfesorDetaliu } from '../tipuri'
+import type { ProfesorDate } from '../tipuri'
 
 // Fișa profesorului: /profesori/:id – datele și disciplinele predate
 export default function ProfesorPage() {
-  const { id } = useParams()
+  const id = Number(useParams().id)
   const navigate = useNavigate()
-  const [profesor, setProfesor] = useState<ProfesorDetaliu | null>(null)
-  const [discipline, setDiscipline] = useState<Disciplina[]>([])
+  const { data: profesor, error } = useProfesor(id)
+  const { data: discipline = [] } = useDiscipline()
+  const salvare = useSalveazaProfesor()
+  const stergere = useStergeProfesor()
+  const adaugarePredare = useAdaugaPredare(id)
+  const stergerePredare = useStergePredare(id)
   const [disciplinaNoua, setDisciplinaNoua] = useState(0)
   const [editare, setEditare] = useState(false)
-  const [erori, setErori] = useState<string[]>([])
-  const [versiune, setVersiune] = useState(0)
-
-  useEffect(() => {
-    citeste<ProfesorDetaliu>(`/api/profesori/${id}`).then(setProfesor).catch((e) => setErori(mesajeDin(e)))
-  }, [id, versiune])
-
-  useEffect(() => {
-    citeste<Disciplina[]>('/api/discipline').then(setDiscipline).catch((e) => setErori(mesajeDin(e)))
-  }, [])
 
   async function salveaza(date: ProfesorDate) {
-    await modifica(`/api/profesori/${id}`, date)
+    await salvare.mutateAsync({ id, corp: date })
     setEditare(false)
-    setVersiune(versiune + 1)
   }
 
   async function stergeProfesorul() {
     if (!profesor || !window.confirm(`Ștergeți profesorul ${profesor.nume} ${profesor.prenume}?`)) return
-    try {
-      await sterge(`/api/profesori/${id}`)
-      navigate('/profesori')
-    } catch (e) {
-      setErori(mesajeDin(e))
-    }
+    await stergere.mutateAsync(id)
+    navigate('/profesori')
   }
 
   // o legătură nouă în relația M–N profesori–discipline (în anul curent)
   async function adaugaDisciplina(ev: FormEvent) {
     ev.preventDefault()
-    try {
-      await creeaza(`/api/profesori/${id}/predari`, { disciplinaId: disciplinaNoua })
-      setDisciplinaNoua(0)
-      setErori([])
-      setVersiune(versiune + 1)
-    } catch (e) {
-      setErori(mesajeDin(e))
-    }
+    await adaugarePredare.mutateAsync(disciplinaNoua)
+    setDisciplinaNoua(0)
   }
 
-  async function stergePredarea(predareId: number) {
-    try {
-      await sterge(`/api/profesori/${id}/predari/${predareId}`)
-      setVersiune(versiune + 1)
-    } catch (e) {
-      setErori(mesajeDin(e))
-    }
-  }
-
+  const erori = [error, stergere.error, adaugarePredare.error, stergerePredare.error].flatMap((e) => (e ? mesajeDin(e) : []))
   if (!profesor) return <MesajEroare mesaje={erori} />
 
   return (
@@ -105,20 +83,22 @@ export default function ProfesorPage() {
                 <td className="numar">{p.disciplina.anStudiu.numar}</td>
                 <td className="numar">{p.disciplina.semestru}</td>
                 <td className="actiuni">
-                  {p.anUniversitar.curent && <button className="mic pericol" onClick={() => stergePredarea(p.id)}>Renunță</button>}
+                  {p.anUniversitar.curent && (
+                    <button className="mic pericol" onClick={() => stergerePredare.mutate(p.id)}>Renunță</button>
+                  )}
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-        <form className="bara-filtre" style={{ marginTop: '0.75rem' }} onSubmit={adaugaDisciplina}>
+        <form className="bara-filtre" style={{ marginTop: '0.75rem' }} onSubmit={(ev) => adaugaDisciplina(ev).catch(() => {})}>
           <select value={disciplinaNoua} onChange={(e) => setDisciplinaNoua(Number(e.target.value))} required>
             <option value={0} disabled>– disciplina –</option>
             {discipline.map((d) => (
               <option key={d.id} value={d.id}>{d.cod} – {d.denumire}</option>
             ))}
           </select>
-          <button type="submit" disabled={!disciplinaNoua}>Adaugă în anul curent</button>
+          <button type="submit" disabled={!disciplinaNoua || adaugarePredare.isPending}>Adaugă în anul curent</button>
         </form>
       </section>
     </>

@@ -1,5 +1,8 @@
 import { NavLink, Outlet } from 'react-router'
 
+// Variabilele de mediu ale frontendului: doar cele cu prefixul VITE_ ajung în codul din browser.
+const titlu = import.meta.env.VITE_TITLU_APLICATIE ?? 'eStudent'
+
 const meniu = [
   { adresa: '/', eticheta: 'Acasă' },
   { adresa: '/studenti', eticheta: 'Studenți' },
@@ -16,7 +19,7 @@ export default function Layout() {
   return (
     <>
       <header className="bara-sus">
-        <span className="logo">eStudent</span>
+        <span className="logo">{titlu}</span>
         <nav className="meniu">
           {meniu.map((m) => (
             // NavLink adaugă singur clasa „active” legăturii paginii curente

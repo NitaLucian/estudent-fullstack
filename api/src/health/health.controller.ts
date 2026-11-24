@@ -1,16 +1,10 @@
 import { Controller, Get } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { PrismaService } from '../prisma/prisma.service.js';
-
-// Forma răspunsului: ce câmpuri trimite serverul și de ce tip sunt.
-export interface StareServer {
-  status: 'ok';
-  aplicatie: string;
-  versiune: string;
-  ora: string;
-  bazaDeDate: 'conectată' | 'indisponibilă';
-}
+import { StareServer } from './stare-server.entity.js';
 
 // GET /api/health – starea serverului și a conexiunii la baza de date
+@ApiTags('health')
 @Controller('health')
 export class HealthController {
   // Nest „injectează” automat PrismaService: nu scriem nicăieri new PrismaService()
@@ -27,7 +21,7 @@ export class HealthController {
     return {
       status: 'ok',
       aplicatie: 'eStudent API',
-      versiune: '0.5.0',
+      versiune: '0.6.0',
       ora: new Date().toISOString(),
       bazaDeDate,
     };

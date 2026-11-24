@@ -1,4 +1,4 @@
-import { PartialType } from '@nestjs/mapped-types';
+import { PartialType } from '@nestjs/swagger';
 import { IsEmail, IsEnum, IsInt, IsOptional, IsString, Length } from 'class-validator';
 import { GradDidactic } from '../../generated/prisma/client.js';
 

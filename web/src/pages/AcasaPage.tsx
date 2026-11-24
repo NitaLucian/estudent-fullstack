@@ -1,24 +1,10 @@
-import { useEffect, useState } from 'react'
-import { citeste } from '../api'
-import type { StareServer } from '../tipuri'
+import { mesajeDin } from '../api/client'
+import { useStareServer } from '../api/hooks'
 
 // Pagina de start: starea serverului și a bazei de date.
 export default function AcasaPage() {
-  const [stare, setStare] = useState<StareServer | null>(null)
-  const [eroare, setEroare] = useState<string | null>(null)
-  const [nrVerificari, setNrVerificari] = useState(0)
-
-  useEffect(() => {
-    citeste<StareServer>('/api/health')
-      .then((date) => {
-        setStare(date)
-        setEroare(null)
-      })
-      .catch((e: Error) => {
-        setStare(null)
-        setEroare(e.message)
-      })
-  }, [nrVerificari])
+  // useQuery ne dă direct: datele, eroarea, starea de încărcare și o funcție de reîncărcare
+  const { data: stare, error, isFetching, refetch } = useStareServer()
 
   return (
     <>
@@ -46,14 +32,15 @@ export default function AcasaPage() {
             <dd>{new Date(stare.ora).toLocaleString('ro-RO')}</dd>
           </dl>
         )}
-        {eroare && (
+        {error && (
           <p className="mesaj eroare">
-            <span className="punct rosu" /> API indisponibil: {eroare}. Porniți backendul
+            <span className="punct rosu" /> API indisponibil: {mesajeDin(error).join('; ')}. Porniți backendul
             cu <code>npm run start:dev</code>.
           </p>
         )}
-        {!stare && !eroare && <p>Se verifică…</p>}
-        <button onClick={() => setNrVerificari(nrVerificari + 1)}>Verifică din nou</button>
+        <button onClick={() => refetch()} disabled={isFetching}>
+          {isFetching ? 'Se verifică…' : 'Verifică din nou'}
+        </button>
       </section>
     </>
   )

@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { mesajeDin } from '../api'
+import { mesajeDin } from '../api/client'
 import type { AnStudiu, DisciplinaDate, Specializare } from '../tipuri'
 import MesajEroare from './MesajEroare'
 
@@ -67,7 +67,7 @@ export default function DisciplinaForm({ initial, titlu, specializari, ani, onSa
       </label>
       <label>
         Semestru
-        <select value={date.semestru} onChange={(e) => schimba('semestru', Number(e.target.value))}>
+        <select value={date.semestru} onChange={(e) => schimba('semestru', Number(e.target.value) === 2 ? 2 : 1)}>
           <option value={1}>semestrul 1</option>
           <option value={2}>semestrul 2</option>
         </select>

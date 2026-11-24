@@ -1,3 +1,4 @@
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsIn, IsInt, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
 
@@ -5,12 +6,15 @@ import { IsIn, IsInt, IsOptional, IsString, Max, MaxLength, Min } from 'class-va
 //   /api/studenti?pagina=2&perPagina=20&cauta=pop&specializareId=1&grupaId=3&ordonare=nrMatricol
 // Tot ce vine din URL este text; @Type(() => Number) îl transformă în număr înainte de validare.
 export class ListaStudentiDto {
+  // au valori implicite, deci în documentație apar ca opționale
+  @ApiPropertyOptional({ default: 1 })
   @IsOptional()
   @Type(() => Number)
   @IsInt({ message: 'Pagina trebuie să fie un număr întreg' })
   @Min(1, { message: 'Paginile încep de la 1' })
   pagina: number = 1;
 
+  @ApiPropertyOptional({ default: 20, maximum: 100 })
   @IsOptional()
   @Type(() => Number)
   @IsInt({ message: 'perPagina trebuie să fie un număr întreg' })
@@ -33,6 +37,7 @@ export class ListaStudentiDto {
   @IsInt()
   grupaId?: number;
 
+  @ApiPropertyOptional({ enum: ['nume', 'nrMatricol'], default: 'nume' })
   @IsOptional()
   @IsIn(['nume', 'nrMatricol'], { message: 'Ordonarea poate fi: nume, nrMatricol' })
   ordonare: 'nume' | 'nrMatricol' = 'nume';

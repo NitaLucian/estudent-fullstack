@@ -1,34 +1,31 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
-import { citeste, creeaza, mesajeDin, modifica, sterge } from '../api'
+import { mesajeDin } from '../api/client'
+import { useAniStudiu, useDiscipline, useSalveazaDisciplina, useSpecializari, useStergeDisciplina } from '../api/hooks'
 import DisciplinaForm from '../components/DisciplinaForm'
 import MesajEroare from '../components/MesajEroare'
 import Tabel, { type Coloana } from '../components/Tabel'
-import type { AnStudiu, Disciplina, DisciplinaDate, Specializare } from '../tipuri'
+import type { Disciplina, DisciplinaDate } from '../tipuri'
 
 type StareFormular = { mod: 'ascuns' } | { mod: 'adaugare' } | { mod: 'modificare'; disciplina: Disciplina }
+
+const numar = (text: string | null) => (text ? Number(text) : undefined)
 
 // Planul de învățământ: disciplinele, filtrate după specializare, an și semestru.
 export default function DisciplinePage() {
   const [params, setParams] = useSearchParams()
-  const [discipline, setDiscipline] = useState<Disciplina[]>([])
-  const [specializari, setSpecializari] = useState<Specializare[]>([])
-  const [ani, setAni] = useState<AnStudiu[]>([])
-  const [erori, setErori] = useState<string[]>([])
+  const filtre = {
+    specializareId: numar(params.get('specializareId')),
+    anStudiuId: numar(params.get('anStudiuId')),
+    // contractul API acceptă doar 1 sau 2: orice altă valoare din adresă este ignorată
+    semestru: params.get('semestru') === '1' ? 1 : params.get('semestru') === '2' ? 2 : undefined,
+  } as const
+  const { data: discipline = [], error } = useDiscipline(filtre)
+  const { data: specializari = [] } = useSpecializari()
+  const { data: ani = [] } = useAniStudiu()
+  const salvare = useSalveazaDisciplina()
+  const stergere = useStergeDisciplina()
   const [formular, setFormular] = useState<StareFormular>({ mod: 'ascuns' })
-  const [versiune, setVersiune] = useState(0)
-
-  useEffect(() => {
-    citeste<Specializare[]>('/api/specializari').then(setSpecializari).catch((e) => setErori(mesajeDin(e)))
-    citeste<AnStudiu[]>('/api/ani-studiu').then(setAni).catch((e) => setErori(mesajeDin(e)))
-  }, [])
-
-  const interogare = params.toString()
-  useEffect(() => {
-    citeste<Disciplina[]>(`/api/discipline?${interogare}`)
-      .then(setDiscipline)
-      .catch((e) => setErori(mesajeDin(e)))
-  }, [interogare, versiune])
 
   function filtru(nume: string, valoare: string) {
     const noi = new URLSearchParams(params)
@@ -38,20 +35,8 @@ export default function DisciplinePage() {
   }
 
   async function salveaza(date: DisciplinaDate) {
-    if (formular.mod === 'modificare') await modifica(`/api/discipline/${formular.disciplina.id}`, date)
-    else await creeaza('/api/discipline', date)
+    await salvare.mutateAsync({ id: formular.mod === 'modificare' ? formular.disciplina.id : undefined, corp: date })
     setFormular({ mod: 'ascuns' })
-    setVersiune(versiune + 1)
-  }
-
-  async function stergeDisciplina(d: Disciplina) {
-    if (!window.confirm(`Ștergeți disciplina ${d.cod} – ${d.denumire}?`)) return
-    try {
-      await sterge(`/api/discipline/${d.id}`)
-      setVersiune(versiune + 1)
-    } catch (e) {
-      setErori(mesajeDin(e))
-    }
   }
 
   const coloane: Coloana<Disciplina>[] = [
@@ -74,17 +59,20 @@ export default function DisciplinePage() {
       celula: (d) => (
         <>
           <button className="mic secundar" onClick={() => setFormular({ mod: 'modificare', disciplina: d })}>Modifică</button>
-          <button className="mic pericol" onClick={() => stergeDisciplina(d)}>Șterge</button>
+          <button
+            className="mic pericol"
+            onClick={() => window.confirm(`Ștergeți disciplina ${d.cod} – ${d.denumire}?`) && stergere.mutate(d.id)}
+          >
+            Șterge
+          </button>
         </>
       ),
     },
   ]
 
-  const specFiltru = Number(params.get('specializareId') ?? 0)
-  const anFiltru = Number(params.get('anStudiuId') ?? 0)
   const initialNou: DisciplinaDate = {
-    cod: '', denumire: '', credite: 5, semestru: Number(params.get('semestru') ?? 1),
-    specializareId: specFiltru, anStudiuId: anFiltru,
+    cod: '', denumire: '', credite: 5, semestru: filtre.semestru ?? 1,
+    specializareId: filtre.specializareId ?? 0, anStudiuId: filtre.anStudiuId ?? 0,
   }
 
   return (
@@ -112,14 +100,18 @@ export default function DisciplinePage() {
         <DisciplinaForm
           key={formular.mod === 'modificare' ? formular.disciplina.id : 'nou'}
           titlu={formular.mod === 'modificare' ? `Modificare ${formular.disciplina.cod}` : 'Disciplină nouă'}
-          initial={formular.mod === 'modificare' ? formular.disciplina : initialNou}
+          initial={
+            formular.mod === 'modificare'
+              ? { ...formular.disciplina, semestru: formular.disciplina.semestru === 2 ? 2 : 1 }
+              : initialNou
+          }
           specializari={specializari}
           ani={ani}
           onSalveaza={salveaza}
           onRenunta={() => setFormular({ mod: 'ascuns' })}
         />
       )}
-      <MesajEroare mesaje={erori} />
+      <MesajEroare mesaje={[error, stergere.error].flatMap((e) => (e ? mesajeDin(e) : []))} />
       <Tabel coloane={coloane} randuri={discipline} cheie={(d) => d.id} gol="Nicio disciplină nu corespunde filtrelor." />
       <p className="nota">
         {discipline.length} discipline, {discipline.reduce((s, d) => s + d.credite, 0)} credite în total.

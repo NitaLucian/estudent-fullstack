@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
-import { citeste, creeaza, mesajeDin, modifica, sterge } from '../api'
+import { useState } from 'react'
+import { mesajeDin } from '../api/client'
+import { useSalveazaSpecializare, useSpecializari, useStergeSpecializare } from '../api/hooks'
 import MesajEroare from '../components/MesajEroare'
 import SpecializareForm from '../components/SpecializareForm'
 import type { Specializare, SpecializareDate } from '../tipuri'
@@ -8,38 +9,20 @@ import type { Specializare, SpecializareDate } from '../tipuri'
 type StareFormular = { mod: 'ascuns' } | { mod: 'adaugare' } | { mod: 'modificare'; specializare: Specializare }
 
 export default function SpecializariPage() {
-  const [specializari, setSpecializari] = useState<Specializare[]>([])
-  const [erori, setErori] = useState<string[]>([])
+  const { data: specializari = [], isPending, error } = useSpecializari()
+  const salvare = useSalveazaSpecializare()
+  const stergere = useStergeSpecializare()
   const [formular, setFormular] = useState<StareFormular>({ mod: 'ascuns' })
-  // crește după fiecare modificare a datelor => efectul de mai jos recitește lista
-  const [versiune, setVersiune] = useState(0)
 
-  useEffect(() => {
-    citeste<Specializare[]>('/api/specializari')
-      .then(setSpecializari)
-      .catch((e) => setErori(mesajeDin(e)))
-  }, [versiune])
-
-  // POST pentru adăugare, PATCH pentru modificare; apoi recitim lista
+  // POST pentru adăugare, PATCH pentru modificare. Lista se recitește singură
+  // (mutația invalidează cheia ['specializari']).
   async function salveaza(date: SpecializareDate) {
-    if (formular.mod === 'modificare') {
-      await modifica(`/api/specializari/${formular.specializare.id}`, date)
-    } else {
-      await creeaza('/api/specializari', date)
-    }
+    await salvare.mutateAsync({ id: formular.mod === 'modificare' ? formular.specializare.id : undefined, corp: date })
     setFormular({ mod: 'ascuns' })
-    setVersiune(versiune + 1)
   }
 
-  async function stergeSpecializarea(s: Specializare) {
-    if (!window.confirm(`Ștergeți specializarea ${s.cod}?`)) return
-    try {
-      await sterge(`/api/specializari/${s.id}`)
-      setErori([])
-      setVersiune(versiune + 1)
-    } catch (e) {
-      setErori(mesajeDin(e))
-    }
+  function stergeSpecializarea(s: Specializare) {
+    if (window.confirm(`Ștergeți specializarea ${s.cod}?`)) stergere.mutate(s.id)
   }
 
   return (
@@ -53,7 +36,6 @@ export default function SpecializariPage() {
 
       {formular.mod !== 'ascuns' && (
         <SpecializareForm
-          // key diferit => React creează un formular nou, cu valorile inițiale ale altei specializări
           key={formular.mod === 'modificare' ? formular.specializare.id : 'nou'}
           titlu={formular.mod === 'modificare' ? `Modificare ${formular.specializare.cod}` : 'Specializare nouă'}
           initial={formular.mod === 'modificare' ? formular.specializare : { cod: '', denumire: '' }}
@@ -62,7 +44,9 @@ export default function SpecializariPage() {
         />
       )}
 
-      <MesajEroare mesaje={erori} />
+      {/* erorile citirii și ale ștergerii (cele ale salvării apar în formular) */}
+      <MesajEroare mesaje={[...(error ? mesajeDin(error) : []), ...(stergere.error ? mesajeDin(stergere.error) : [])]} />
+      {isPending && <p>Se încarcă…</p>}
 
       <table className="tabel">
         <thead>
@@ -78,12 +62,12 @@ export default function SpecializariPage() {
             <tr key={s.id}>
               <td><strong>{s.cod}</strong></td>
               <td>{s.denumire}</td>
-              <td className="numar">{s._count?.grupe ?? 0}</td>
+              <td className="numar">{s._count.grupe}</td>
               <td className="actiuni">
                 <button className="mic secundar" onClick={() => setFormular({ mod: 'modificare', specializare: s })}>
                   Modifică
                 </button>
-                <button className="mic pericol" onClick={() => stergeSpecializarea(s)}>
+                <button className="mic pericol" onClick={() => stergeSpecializarea(s)} disabled={stergere.isPending}>
                   Șterge
                 </button>
               </td>

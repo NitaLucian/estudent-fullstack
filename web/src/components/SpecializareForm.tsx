@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { mesajeDin } from '../api'
+import { mesajeDin } from '../api/client'
 import type { SpecializareDate } from '../tipuri'
 import MesajEroare from './MesajEroare'
 

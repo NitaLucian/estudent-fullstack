@@ -1,47 +1,34 @@
-import { useEffect, useState, type FormEvent } from 'react'
-import { citeste, creeaza, mesajeDin } from '../api'
+import { useState, type FormEvent } from 'react'
+import { mesajeDin } from '../api/client'
+import { useAniUniversitari, useCreeazaAnUniversitar, useStabilesteAnCurent } from '../api/hooks'
 import MesajEroare from '../components/MesajEroare'
 import { formatData } from '../format'
 import type { AnUniversitar } from '../tipuri'
 
 export default function AniUniversitariPage() {
-  const [ani, setAni] = useState<AnUniversitar[]>([])
+  const { data: ani = [], error } = useAniUniversitari()
+  const creare = useCreeazaAnUniversitar()
+  const faCurent = useStabilesteAnCurent()
   const [cod, setCod] = useState('')
   const [inceput, setInceput] = useState('')
   const [sfarsit, setSfarsit] = useState('')
-  const [erori, setErori] = useState<string[]>([])
-  const [versiune, setVersiune] = useState(0)
 
-  useEffect(() => {
-    citeste<AnUniversitar[]>('/api/ani-universitari').then(setAni).catch((e) => setErori(mesajeDin(e)))
-  }, [versiune])
-
-  async function adauga(ev: FormEvent) {
+  function adauga(ev: FormEvent) {
     ev.preventDefault()
-    try {
-      await creeaza('/api/ani-universitari', { cod: cod.trim(), dataInceput: inceput, dataSfarsit: sfarsit })
-      setCod('')
-      setErori([])
-      setVersiune(versiune + 1)
-    } catch (e) {
-      setErori(mesajeDin(e))
-    }
+    creare.mutate(
+      { cod: cod.trim(), dataInceput: inceput, dataSfarsit: sfarsit },
+      { onSuccess: () => setCod('') }, // golim câmpul doar dacă adăugarea a reușit
+    )
   }
 
-  async function faCurent(an: AnUniversitar) {
-    if (!window.confirm(`Anul ${an.cod} devine anul universitar curent. Continuați?`)) return
-    try {
-      await creeaza(`/api/ani-universitari/${an.id}/curent`, {})
-      setVersiune(versiune + 1)
-    } catch (e) {
-      setErori(mesajeDin(e))
-    }
+  function stabilesteCurent(an: AnUniversitar) {
+    if (window.confirm(`Anul ${an.cod} devine anul universitar curent. Continuați?`)) faCurent.mutate(an.id)
   }
 
   return (
     <>
       <h1>Ani universitari</h1>
-      <MesajEroare mesaje={erori} />
+      <MesajEroare mesaje={[error, creare.error, faCurent.error].flatMap((e) => (e ? mesajeDin(e) : []))} />
       <table className="tabel">
         <thead>
           <tr><th>Cod</th><th>Început</th><th>Sfârșit</th><th className="numar">Înscrieri</th><th className="actiuni"></th></tr>
@@ -52,9 +39,9 @@ export default function AniUniversitariPage() {
               <td><strong>{a.cod}</strong>{a.curent && <span className="eticheta">curent</span>}</td>
               <td>{formatData(a.dataInceput)}</td>
               <td>{formatData(a.dataSfarsit)}</td>
-              <td className="numar">{a._count?.inscrieri ?? 0}</td>
+              <td className="numar">{a._count.inscrieri}</td>
               <td className="actiuni">
-                {!a.curent && <button className="mic secundar" onClick={() => faCurent(a)}>Fă-l curent</button>}
+                {!a.curent && <button className="mic secundar" onClick={() => stabilesteCurent(a)}>Fă-l curent</button>}
               </td>
             </tr>
           ))}
@@ -75,7 +62,7 @@ export default function AniUniversitariPage() {
           <input type="date" value={sfarsit} onChange={(e) => setSfarsit(e.target.value)} required />
         </label>
         <div className="butoane">
-          <button type="submit">Adaugă</button>
+          <button type="submit" disabled={creare.isPending}>Adaugă</button>
         </div>
       </form>
     </>

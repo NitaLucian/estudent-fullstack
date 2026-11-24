@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { AniModule } from './ani/ani.module.js';
+import { valideazaMediul } from './config/variabile-mediu.js';
 import { DisciplineModule } from './discipline/discipline.module.js';
 import { GrupeModule } from './grupe/grupe.module.js';
 import { HealthController } from './health/health.controller.js';
@@ -12,6 +14,8 @@ import { StudentiModule } from './studenti/studenti.module.js';
 // Modulul rădăcină: lista tuturor componentelor aplicației.
 @Module({
   imports: [
+    // citește .env, validează variabilele și oferă ConfigService în toată aplicația
+    ConfigModule.forRoot({ isGlobal: true, validate: valideazaMediul }),
     PrismaModule,
     AniModule,
     SpecializariModule,

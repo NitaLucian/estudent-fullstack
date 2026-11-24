@@ -1,6 +1,7 @@
-import 'dotenv/config'; // primul import: încarcă variabilele din .env (DATABASE_URL, PORT)
 import { ValidationPipe } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module.js';
 import { PrismaExceptionFilter } from './common/prisma-exception.filter.js';
 
@@ -12,17 +13,23 @@ async function bootstrap() {
   // Toate rutele API încep cu /api (ex.: /api/health).
   app.setGlobalPrefix('api');
 
-  // Validează automat corpul fiecărei cereri după regulile din clasele DTO:
-  //  whitelist            – elimină câmpurile care nu apar în DTO
-  //  forbidNonWhitelisted – ... sau, mai strict, respinge cererea care le conține
-  //  transform            – transformă JSON-ul primit într-un obiect al clasei DTO
+  // Validează automat corpul fiecărei cereri după regulile din clasele DTO.
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }));
 
   // Erorile bazei de date devin răspunsuri HTTP clare (409, 404 ...)
   app.useGlobalFilters(new PrismaExceptionFilter());
 
-  const port = Number(process.env.PORT ?? 3000);
+  // Documentația OpenAPI: pagina /api/docs și descrierea JSON /api/docs-json.
+  // Din descrierea JSON, frontendul își generează tipurile (npm run api:tipuri).
+  const config = new DocumentBuilder()
+    .setTitle('eStudent API')
+    .setDescription('API-ul aplicației de evidență a studenților')
+    .setVersion('0.6.0')
+    .build();
+  SwaggerModule.setup('api/docs', app, () => SwaggerModule.createDocument(app, config));
+
+  const port = app.get(ConfigService).get<number>('PORT') ?? 3000;
   await app.listen(port);
-  console.log(`eStudent API ascultă pe http://localhost:${port}/api`);
+  console.log(`eStudent API ascultă pe http://localhost:${port}/api (documentația: /api/docs)`);
 }
 await bootstrap();
