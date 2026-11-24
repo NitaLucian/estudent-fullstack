@@ -201,6 +201,20 @@ export class StudentiService {
     return this.findOne(id);
   }
 
+  // Retrimite invitația: legăturile de setare trimise anterior devin invalide,
+  // iar studentul primește una nouă (de exemplu, dacă prima a expirat după 72 de ore).
+  async retrimiteInvitatia(id: number) {
+    const student = await this.prisma.student.findUnique({ where: { id }, include: { utilizator: true } });
+    if (!student) throw new NotFoundException(`Studentul ${id} nu există`);
+    if (!student.utilizator) throw new BadRequestException('Studentul nu are cont de acces');
+    await this.prisma.tokenParola.updateMany({
+      where: { utilizatorId: student.utilizator.id, scop: 'SETARE', folositLa: null },
+      data: { folositLa: new Date() },
+    });
+    const token = await this.parole.creeazaToken(student.utilizator.id, 'SETARE');
+    this.evenimente.emit(CONT_CREAT, new ContCreat(student.email, `${student.prenume} ${student.nume}`, token));
+  }
+
   // înscrierile studentului se șterg odată cu el (onDelete: Cascade)
   async remove(id: number) {
     await this.prisma.student.delete({ where: { id } });

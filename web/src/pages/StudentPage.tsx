@@ -2,7 +2,8 @@ import { useState, type FormEvent } from 'react'
 import { Link, useLocation, useNavigate, useParams } from 'react-router'
 import { mesajeDin } from '../api/client'
 import {
-  useAniUniversitari, useCreeazaInscriere, useGrupe, useStergeInscriere, useStergeStudent, useStudent,
+  useAniUniversitari, useCreeazaInscriere, useGrupe, useRetrimiteInvitatia, useStergeInscriere, useStergeStudent,
+  useStudent,
 } from '../api/hooks'
 import { usePermisiuni } from '../auth/permisiuni'
 import DocumenteStudent from '../components/DocumenteStudent'
@@ -21,6 +22,7 @@ export default function StudentPage() {
   const stergereStudent = useStergeStudent()
   const inscriere = useCreeazaInscriere()
   const stergereInscriere = useStergeInscriere()
+  const invitatie = useRetrimiteInvitatia()
   const [grupaNoua, setGrupaNoua] = useState(0)
   const [anNou, setAnNou] = useState(0)
   const { esteAdmin, esteStudent, studentId } = usePermisiuni()
@@ -39,12 +41,13 @@ export default function StudentPage() {
   }
 
   // toate erorile paginii, într-o singură listă
-  const erori = [error, stergereStudent.error, inscriere.error, stergereInscriere.error].flatMap((e) => (e ? mesajeDin(e) : []))
+  const erori = [error, stergereStudent.error, inscriere.error, stergereInscriere.error, invitatie.error].flatMap((e) => (e ? mesajeDin(e) : []))
 
   return (
     <>
       {!esteStudent && <p><Link to="/studenti">‹ Înapoi la listă</Link></p>}
       {mesaj && <p className="mesaj succes">{mesaj}</p>}
+      {invitatie.isSuccess && <p className="mesaj succes">Invitația a fost trimisă din nou pe email.</p>}
       <MesajEroare mesaje={erori} />
       {student && (
         <>
@@ -53,6 +56,9 @@ export default function StudentPage() {
               <h1>{student.nume} {student.prenume}</h1>
               {esteAdmin && (
                 <div className="butoane">
+                  <button className="secundar" disabled={invitatie.isPending} onClick={() => invitatie.mutate(student.id)}>
+                    Retrimite invitația
+                  </button>
                   <Link className="buton secundar" to={`/studenti/${student.id}/editare`}>Modifică</Link>
                   <button className="pericol" onClick={stergeStudentul}>Șterge</button>
                 </div>

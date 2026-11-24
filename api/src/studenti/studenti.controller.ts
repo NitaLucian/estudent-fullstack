@@ -42,6 +42,14 @@ export class StudentiController {
     return this.service.update(id, date);
   }
 
+  // POST /api/studenti/:id/invitatie – un email nou cu legătura de alegere a parolei
+  @Roluri('ADMIN')
+  @Post(':id/invitatie')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  retrimiteInvitatia(@Param('id', ParseIntPipe) id: number): Promise<void> {
+    return this.service.retrimiteInvitatia(id);
+  }
+
   @Roluri('ADMIN')
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)

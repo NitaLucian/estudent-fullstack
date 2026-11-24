@@ -146,6 +146,12 @@ export function useSalveazaStudent() {
   })
 }
 
+export function useRetrimiteInvitatia() {
+  return useMutation({
+    mutationFn: (id: number) => date(client.POST('/api/studenti/{id}/invitatie', { params: { path: { id } } })),
+  })
+}
+
 export function useStergeStudent() {
   const qc = useQueryClient()
   return useMutation({
