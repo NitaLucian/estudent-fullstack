@@ -87,6 +87,7 @@ model Inscriere {
   student         Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
   grupa           Grupa         @relation(fields: [grupaId], references: [id], onDelete: Restrict)
   anUniversitar   AnUniversitar @relation(fields: [anUniversitarId], references: [id], onDelete: Restrict)
+  note            Nota[]
 
   @@unique([studentId, anUniversitarId]) // un student are o singură grupă într-un an universitar
   @@index([grupaId])
@@ -106,6 +107,7 @@ model Disciplina {
   specializare   Specializare @relation(fields: [specializareId], references: [id], onDelete: Restrict)
   anStudiu       AnStudiu     @relation(fields: [anStudiuId], references: [id], onDelete: Restrict)
   predari        Predare[]
+  note           Nota[]
 
   @@index([specializareId, anStudiuId])
   @@map("discipline")
@@ -173,6 +175,8 @@ model Utilizator {
   creatLa             DateTime         @default(now()) @map("creat_la") @db.Timestamptz(3)
   ultimaAutentificare DateTime?        @map("ultima_autentificare") @db.Timestamptz(3)
   sesiuni             SesiuneRefresh[]
+  noteModificate      Nota[]
+  istoricNote         IstoricNota[]
 
   @@map("utilizatori")
 }
@@ -190,4 +194,38 @@ model SesiuneRefresh {
 
   @@index([utilizatorId])
   @@map("sesiuni_refresh")
+}
+
+// Nota unui student (printr-o înscriere: student + grupă + an universitar) la o disciplină.
+model Nota {
+  id            Int         @id @default(autoincrement())
+  inscriereId   Int         @map("inscriere_id")
+  disciplinaId  Int         @map("disciplina_id")
+  valoare       Int         @db.SmallInt // 1–10 (constrângere CHECK în migrare)
+  data          DateTime    @db.Date // data examenului
+  modificatDeId Int?        @map("modificat_de_id")
+  modificatLa   DateTime    @updatedAt @map("modificat_la") @db.Timestamptz(3)
+  inscriere     Inscriere   @relation(fields: [inscriereId], references: [id], onDelete: Restrict)
+  disciplina    Disciplina  @relation(fields: [disciplinaId], references: [id], onDelete: Restrict)
+  modificatDe   Utilizator? @relation(fields: [modificatDeId], references: [id], onDelete: SetNull)
+
+  @@unique([inscriereId, disciplinaId]) // o singură notă pe disciplină într-un an
+  @@index([disciplinaId])
+  @@map("note")
+}
+
+// Istoricul modificărilor notelor (audit): cine, când, din ce în ce.
+// Nu are cheie străină spre note: istoricul rămâne și după ștergerea unei note.
+model IstoricNota {
+  id           Int        @id @default(autoincrement())
+  inscriereId  Int        @map("inscriere_id")
+  disciplinaId Int        @map("disciplina_id")
+  valoareVeche Int?       @map("valoare_veche") @db.SmallInt // null = nota nu exista
+  valoareNoua  Int?       @map("valoare_noua") @db.SmallInt // null = nota a fost ștearsă
+  utilizatorId Int        @map("utilizator_id")
+  utilizator   Utilizator @relation(fields: [utilizatorId], references: [id], onDelete: Restrict)
+  la           DateTime   @default(now()) @db.Timestamptz(3)
+
+  @@index([inscriereId, disciplinaId])
+  @@map("istoric_note")
 }

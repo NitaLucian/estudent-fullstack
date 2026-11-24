@@ -185,6 +185,48 @@ async function seedUtilizatori() {
   console.log(`Seed: ${conturi.length} conturi (parola de test: vezi PAROLA_DEMO în seed.ts).`);
 }
 
+// Notele din anul universitar trecut (anTrecut): fiecare student are o notă la fiecare
+// disciplină a anului său de studiu. Anul curent începe fără note: le introduc profesorii.
+// createMany + skipDuplicates: o singură comandă INSERT pentru multe rânduri; la rularea
+// repetată, rândurile existente (aceeași pereche înscriere–disciplină) sunt sărite.
+async function seedNote() {
+  const aleator = generator(2026);
+  const trecut = await prisma.anUniversitar.findUniqueOrThrow({ where: { cod: anTrecut.cod } });
+  const inscrieri = await prisma.inscriere.findMany({
+    where: { anUniversitarId: trecut.id },
+    include: { grupa: true },
+    orderBy: { id: 'asc' },
+  });
+  const discipline = await prisma.disciplina.findMany({ orderBy: { cod: 'asc' } });
+  // cine a predat fiecare disciplină în anul trecut -> contul lui (modificatDe)
+  const predari = await prisma.predare.findMany({
+    where: { anUniversitarId: trecut.id },
+    include: { profesor: { include: { utilizator: true } } },
+  });
+  const profesorul = new Map(predari.map((p) => [p.disciplinaId, p.profesor.utilizator?.id ?? null]));
+
+  // distribuția notelor: mai multe note de 7–9 decât de 4 sau 10
+  const valori = [4, 5, 5, 6, 6, 7, 7, 7, 8, 8, 8, 8, 9, 9, 9, 10, 10];
+  const note = [];
+  for (const ins of inscrieri) {
+    const ale = discipline.filter(
+      (d) => d.specializareId === ins.grupa.specializareId && d.anStudiuId === ins.grupa.anStudiuId,
+    );
+    for (const d of ale) {
+      const zi = 1 + Math.floor(aleator() * 20);
+      note.push({
+        inscriereId: ins.id,
+        disciplinaId: d.id,
+        valoare: valori[Math.floor(aleator() * valori.length)],
+        data: new Date(Date.UTC(AN_INCEPUT, d.semestru === 1 ? 0 : 5, 10 + zi)), // sesiunile din ianuarie și iunie ale anului trecut
+        modificatDeId: profesorul.get(d.id) ?? null,
+      });
+    }
+  }
+  const { count } = await prisma.nota.createMany({ data: note, skipDuplicates: true });
+  console.log(`Seed: ${note.length} note în ${trecut.cod} (${count} adăugate acum).`);
+}
+
 async function main() {
   await seedSpecializari();
   await seedAniStudiu();
@@ -195,6 +237,7 @@ async function main() {
   await seedProfesori();
   await seedPredari();
   await seedUtilizatori();
+  await seedNote();
 }
 
 main()

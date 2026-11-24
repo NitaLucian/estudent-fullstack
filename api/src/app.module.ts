@@ -7,6 +7,7 @@ import { DisciplineModule } from './discipline/discipline.module.js';
 import { GrupeModule } from './grupe/grupe.module.js';
 import { HealthController } from './health/health.controller.js';
 import { InscrieriModule } from './inscrieri/inscrieri.module.js';
+import { NoteModule } from './note/note.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
 import { ProfesoriModule } from './profesori/profesori.module.js';
 import { SpecializariModule } from './specializari/specializari.module.js';
@@ -26,6 +27,7 @@ import { StudentiModule } from './studenti/studenti.module.js';
     InscrieriModule,
     DisciplineModule,
     ProfesoriModule,
+    NoteModule,
   ],
   controllers: [HealthController],
   providers: [],

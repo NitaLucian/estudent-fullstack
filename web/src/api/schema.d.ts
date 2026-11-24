@@ -372,6 +372,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/note/catalog/{disciplinaId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["NoteController_catalog"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/note/catalog/{disciplinaId}/{inscriereId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["NoteController_seteaza"];
+        post?: never;
+        delete: operations["NoteController_sterge"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/note/student/{studentId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["NoteController_situatie"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -692,6 +740,72 @@ export interface components {
             profesorId: number;
             disciplinaId: number;
             anUniversitarId: number;
+        };
+        DisciplinaCatalog: {
+            id: number;
+            cod: string;
+            denumire: string;
+            credite: number;
+            semestru: number;
+            specializare: string;
+            an: number;
+        };
+        StudentCatalog: {
+            id: number;
+            nrMatricol: string;
+            nume: string;
+            prenume: string;
+        };
+        NotaScurta: {
+            id: number;
+            /** @description 1–10 */
+            valoare: number;
+            /**
+             * Format: date-time
+             * @description Data examenului
+             */
+            data: string;
+            /** Format: date-time */
+            modificatLa: string;
+        };
+        RandCatalog: {
+            inscriereId: number;
+            grupa: string;
+            student: components["schemas"]["StudentCatalog"];
+            nota: components["schemas"]["NotaScurta"] | null;
+        };
+        Catalog: {
+            disciplina: components["schemas"]["DisciplinaCatalog"];
+            anUniversitar: string;
+            randuri: components["schemas"]["RandCatalog"][];
+        };
+        SeteazaNotaDto: {
+            valoare: number;
+            data?: string;
+        };
+        NotaStudent: {
+            id: number;
+            valoare: number;
+            /** Format: date-time */
+            data: string;
+            anUniversitar: string;
+            disciplina: components["schemas"]["DisciplinaCatalog"];
+        };
+        MedieAn: {
+            anUniversitar: string;
+            numarNote: number;
+            /** @description Media aritmetică a notelor */
+            medieAritmetica: number;
+            /** @description Media ponderată cu creditele: suma(notă × credite) / suma(credite) */
+            mediePonderata: number;
+            /** @description Creditele disciplinelor promovate (notă cel puțin 5) */
+            crediteObtinute: number;
+            crediteTotale: number;
+        };
+        SituatieScolara: {
+            student: components["schemas"]["StudentCatalog"];
+            note: components["schemas"]["NotaStudent"][];
+            medii: components["schemas"]["MedieAn"][];
         };
     };
     responses: never;
@@ -1557,6 +1671,94 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    NoteController_catalog: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                disciplinaId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Catalog"];
+                };
+            };
+        };
+    };
+    NoteController_seteaza: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                disciplinaId: number;
+                inscriereId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SeteazaNotaDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotaScurta"];
+                };
+            };
+        };
+    };
+    NoteController_sterge: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                disciplinaId: number;
+                inscriereId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    NoteController_situatie: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                studentId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SituatieScolara"];
+                };
             };
         };
     };

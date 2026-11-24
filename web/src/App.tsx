@@ -4,9 +4,11 @@ import RutaProtejata from './auth/RutaProtejata'
 import Layout from './components/Layout'
 import AcasaPage from './pages/AcasaPage'
 import AniUniversitariPage from './pages/AniUniversitariPage'
+import CatalogPage from './pages/CatalogPage'
 import DisciplinePage from './pages/DisciplinePage'
 import GrupePage from './pages/GrupePage'
 import LoginPage from './pages/LoginPage'
+import NotePage from './pages/NotePage'
 import NotFoundPage from './pages/NotFoundPage'
 import ProfesoriPage from './pages/ProfesoriPage'
 import ProfesorPage from './pages/ProfesorPage'
@@ -27,12 +29,14 @@ export default function App() {
           <Route index element={<AcasaPage />} />
           <Route path="discipline" element={<DisciplinePage />} />
           <Route path="studenti/:id" element={<StudentPage />} />
+          <Route path="studenti/:id/note" element={<NotePage />} />
           <Route path="profesori/:id" element={<ProfesorPage />} />
 
           {/* administrator și profesor */}
           <Route element={<RutaPentruRoluri roluri={['ADMIN', 'PROFESOR']} />}>
             <Route path="studenti" element={<StudentiPage />} />
             <Route path="grupe" element={<GrupePage />} />
+            <Route path="catalog/:disciplinaId" element={<CatalogPage />} />
           </Route>
 
           {/* doar administrator */}

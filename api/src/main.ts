@@ -28,7 +28,7 @@ async function bootstrap() {
   const config = new DocumentBuilder()
     .setTitle('eStudent API')
     .setDescription('API-ul aplicației de evidență a studenților')
-    .setVersion('0.8.0')
+    .setVersion('0.9.0')
     .addBearerAuth() // butonul „Authorize” din Swagger UI: token-ul JWT
     .addSecurityRequirements('bearer')
     .build();

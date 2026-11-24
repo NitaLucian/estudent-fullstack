@@ -59,6 +59,8 @@ export default function StudentPage() {
               <dd>{student.email}</dd>
               <dt>Data nașterii</dt>
               <dd>{formatData(student.dataNasterii)}</dd>
+              <dt>Note</dt>
+              <dd><Link to={`/studenti/${student.id}/note`}>situația școlară</Link></dd>
               <dt>Grupa (anul curent)</dt>
               <dd>{student.grupa ? `${student.grupa.cod} (anul ${student.grupa.an}, ${student.grupa.specializare.cod})` : '–'}</dd>
             </dl>

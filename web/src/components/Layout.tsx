@@ -30,6 +30,7 @@ function meniuPentru(u: UtilizatorAutentificat): { adresa: string; eticheta: str
       return [
         { adresa: '/', eticheta: 'Acasă' },
         { adresa: `/studenti/${u.studentId}`, eticheta: 'Fișa mea' },
+        { adresa: `/studenti/${u.studentId}/note`, eticheta: 'Notele mele' },
         { adresa: '/discipline', eticheta: 'Plan de învățământ' },
       ]
   }
@@ -47,8 +48,9 @@ export default function Layout() {
         <span className="logo">{titlu}</span>
         <nav className="meniu">
           {utilizator && meniuPentru(utilizator).map((m) => (
-            // NavLink adaugă singur clasa „active” legăturii paginii curente
-            <NavLink key={m.adresa} to={m.adresa} end={m.adresa === '/'}>
+            // NavLink adaugă singur clasa „active” legăturii paginii curente;
+            // end: doar adresa exactă (altfel /studenti/18 ar fi activ și pe /studenti/18/note)
+            <NavLink key={m.adresa} to={m.adresa} end>
               {m.eticheta}
             </NavLink>
           ))}

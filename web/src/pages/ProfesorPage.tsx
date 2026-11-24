@@ -82,7 +82,13 @@ export default function ProfesorPage() {
               <tr key={p.id}>
                 <td>{p.anUniversitar.cod}</td>
                 <td>{p.disciplina.cod}</td>
-                <td>{p.disciplina.denumire}</td>
+                <td>
+                  {p.anUniversitar.curent ? (
+                    <Link to={`/catalog/${p.disciplina.id}`}>{p.disciplina.denumire}</Link>
+                  ) : (
+                    p.disciplina.denumire
+                  )}
+                </td>
                 <td>{p.disciplina.specializare.cod}</td>
                 <td className="numar">{p.disciplina.anStudiu.numar}</td>
                 <td className="numar">{p.disciplina.semestru}</td>

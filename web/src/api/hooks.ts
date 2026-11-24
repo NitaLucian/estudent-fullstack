@@ -268,3 +268,48 @@ export function useStergePredare(profesorId: number) {
     },
   })
 }
+
+// ---------- note ----------
+export function useCatalog(disciplinaId: number) {
+  return useQuery({
+    queryKey: ['catalog', disciplinaId],
+    queryFn: () => date(client.GET('/api/note/catalog/{disciplinaId}', { params: { path: { disciplinaId } } })),
+  })
+}
+
+export function useSeteazaNota(disciplinaId: number) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ inscriereId, valoare }: { inscriereId: number; valoare: number }) =>
+      date(
+        client.PUT('/api/note/catalog/{disciplinaId}/{inscriereId}', {
+          params: { path: { disciplinaId, inscriereId } },
+          body: { valoare },
+        }),
+      ),
+    // notele schimbă și catalogul, și situația școlară a studentului
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['catalog', disciplinaId] })
+      qc.invalidateQueries({ queryKey: ['situatie'] })
+    },
+  })
+}
+
+export function useStergeNota(disciplinaId: number) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (inscriereId: number) =>
+      date(client.DELETE('/api/note/catalog/{disciplinaId}/{inscriereId}', { params: { path: { disciplinaId, inscriereId } } })),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['catalog', disciplinaId] })
+      qc.invalidateQueries({ queryKey: ['situatie'] })
+    },
+  })
+}
+
+export function useSituatie(studentId: number) {
+  return useQuery({
+    queryKey: ['situatie', studentId],
+    queryFn: () => date(client.GET('/api/note/student/{studentId}', { params: { path: { studentId } } })),
+  })
+}
