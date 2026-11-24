@@ -1,5 +1,5 @@
 import { plainToInstance, Type } from 'class-transformer';
-import { IsInt, IsNotEmpty, IsOptional, IsString, Max, Min, validateSync } from 'class-validator';
+import { IsBooleanString, IsInt, IsNotEmpty, IsOptional, IsString, Max, Min, MinLength, validateSync } from 'class-validator';
 
 // Variabilele de mediu de care are nevoie backendul. Dacă una obligatorie lipsește
 // sau are o valoare greșită, aplicația NU pornește (e mai bine să afli imediat).
@@ -14,6 +14,25 @@ class VariabileMediu {
   @Min(1, { message: 'PORT este între 1 și 65535' })
   @Max(65535, { message: 'PORT este între 1 și 65535' })
   PORT: number = 3000;
+
+  // cheia cu care serverul semnează token-urile JWT: lungă, aleatoare și secretă
+  @IsString()
+  @MinLength(32, { message: 'JWT_SECRET trebuie să aibă cel puțin 32 de caractere' })
+  JWT_SECRET: string;
+
+  @IsOptional()
+  @IsString()
+  JWT_EXPIRA: string = '15m';
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  REFRESH_ZILE: number = 7;
+
+  @IsOptional()
+  @IsBooleanString({ message: 'COOKIE_SECURE este true sau false' })
+  COOKIE_SECURE: string = 'false';
 }
 
 // Funcția primită de ConfigModule: verifică variabilele citite din mediu și din .env

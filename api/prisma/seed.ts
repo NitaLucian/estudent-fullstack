@@ -2,6 +2,7 @@
 // Scriptul poate fi rulat de oricâte ori: upsert actualizează ce există și adaugă ce lipsește.
 import 'dotenv/config';
 import { PrismaPg } from '@prisma/adapter-pg';
+import * as argon2 from 'argon2';
 import { PrismaClient } from '../src/generated/prisma/client.js';
 import {
   AN_INCEPUT, anCurent, anTrecut,
@@ -14,6 +15,10 @@ const prisma = new PrismaClient({
 });
 
 const STUDENTI_PE_GRUPA = 8;
+
+// Parola tuturor conturilor de test. DOAR pentru dezvoltare: o bază de date reală
+// nu primește niciodată conturi cu parole cunoscute.
+const PAROLA_DEMO = 'eStudent2027!';
 
 async function seedSpecializari() {
   for (const s of specializari) {
@@ -162,6 +167,24 @@ async function seedPredari() {
   console.log(`Seed: ${n} predări.`);
 }
 
+// Conturile de acces: un administrator, câte un cont pentru fiecare profesor și student.
+// Hash-ul se calculează o singură dată și se refolosește (argon2 este lent intenționat:
+// ~0,1 s pe parolă). Conturile reale primesc fiecare propriul hash, cu propria „sare”.
+async function seedUtilizatori() {
+  const parolaHash = await argon2.hash(PAROLA_DEMO);
+  const conturi: { email: string; rol: 'ADMIN' | 'PROFESOR' | 'STUDENT'; profesorId?: number; studentId?: number }[] = [
+    { email: 'admin@estudent.ro', rol: 'ADMIN' },
+  ];
+  for (const p of await prisma.profesor.findMany()) conturi.push({ email: p.email, rol: 'PROFESOR', profesorId: p.id });
+  for (const s of await prisma.student.findMany()) conturi.push({ email: s.email, rol: 'STUDENT', studentId: s.id });
+
+  for (const c of conturi) {
+    // la rularea repetată nu schimbăm parola unui cont existent
+    await prisma.utilizator.upsert({ where: { email: c.email }, update: {}, create: { ...c, parolaHash } });
+  }
+  console.log(`Seed: ${conturi.length} conturi (parola de test: vezi PAROLA_DEMO în seed.ts).`);
+}
+
 async function main() {
   await seedSpecializari();
   await seedAniStudiu();
@@ -171,6 +194,7 @@ async function main() {
   await seedDiscipline();
   await seedProfesori();
   await seedPredari();
+  await seedUtilizatori();
 }
 
 main()

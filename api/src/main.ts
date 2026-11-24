@@ -2,6 +2,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module.js';
 import { PrismaExceptionFilter } from './common/prisma-exception.filter.js';
 
@@ -12,6 +13,9 @@ async function bootstrap() {
 
   // Toate rutele API încep cu /api (ex.: /api/health).
   app.setGlobalPrefix('api');
+
+  // citește cookie-urile cererii în req.cookies (refresh token-ul)
+  app.use(cookieParser());
 
   // Validează automat corpul fiecărei cereri după regulile din clasele DTO.
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }));
@@ -24,7 +28,9 @@ async function bootstrap() {
   const config = new DocumentBuilder()
     .setTitle('eStudent API')
     .setDescription('API-ul aplicației de evidență a studenților')
-    .setVersion('0.6.0')
+    .setVersion('0.7.0')
+    .addBearerAuth() // butonul „Authorize” din Swagger UI: token-ul JWT
+    .addSecurityRequirements('bearer')
     .build();
   SwaggerModule.setup('api/docs', app, () => SwaggerModule.createDocument(app, config));
 

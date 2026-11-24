@@ -2,9 +2,24 @@
 // Tipurile din schema.d.ts se regenerează cu: npm run api:tipuri (backendul pornit)
 import createClient from 'openapi-fetch'
 import type { paths } from './schema'
+import { reimprospateaza, tokenCurent } from './sesiune'
+
+// Fiecare cerere primește antetul Authorization cu token-ul de acces.
+// Dacă serverul răspunde 401 (token expirat), reîmprospătăm sesiunea o dată și repetăm cererea.
+async function fetchAutentificat(cerere: Request): Promise<Response> {
+  const copie = cerere.clone() // corpul unei cereri se poate citi o singură dată
+  const trimite = (c: Request) => {
+    const token = tokenCurent()
+    if (token) c.headers.set('Authorization', `Bearer ${token}`)
+    return fetch(c)
+  }
+  const raspuns = await trimite(cerere)
+  if (raspuns.status !== 401 || cerere.url.includes('/api/auth/')) return raspuns
+  return (await reimprospateaza()) ? trimite(copie) : raspuns
+}
 
 // client.GET('/api/studenti/{id}', ...) – adresa, parametrii și răspunsul sunt verificate de TypeScript
-export const client = createClient<paths>({ baseUrl: '' })
+export const client = createClient<paths>({ baseUrl: '', fetch: fetchAutentificat })
 
 // O eroare primită de la API: codul HTTP și mesajele serverului.
 export class ApiError extends Error {

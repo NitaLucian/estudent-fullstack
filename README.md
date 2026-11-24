@@ -26,6 +26,14 @@ Frontend (al doilea terminal):
 - API: http://localhost:3000/api/health
 - Documentația API (Swagger): http://localhost:3000/api/docs
 
+## Conturi de test (create de seed)
+
+- administrator: `admin@estudent.ro`
+- profesori: adresele din pagina Profesori (de ex. `mihaela.andrei@estudent.ro`)
+- studenți: adresele din pagina Studenți (de ex. `ioana.tudor@student.estudent.ro`)
+
+Toate au aceeași parolă de test, `PAROLA_DEMO` din `api/prisma/seed.ts`. Doar pentru dezvoltare.
+
 ## După modificarea modelului (api/prisma/schema.prisma)
 
     npx prisma migrate dev --name <ce-s-a-schimbat>

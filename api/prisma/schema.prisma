@@ -58,6 +58,7 @@ model Student {
   email        String      @unique @db.VarChar(100)
   dataNasterii DateTime?   @map("data_nasterii") @db.Date
   inscrieri    Inscriere[]
+  utilizator   Utilizator?
 
   @@index([nume, prenume])
   @@map("studenti")
@@ -121,12 +122,13 @@ enum GradDidactic {
 }
 
 model Profesor {
-  id      Int          @id @default(autoincrement())
-  nume    String       @db.VarChar(50)
-  prenume String       @db.VarChar(50)
-  email   String       @unique @db.VarChar(100)
-  grad    GradDidactic @default(ASISTENT)
-  predari Predare[]
+  id         Int          @id @default(autoincrement())
+  nume       String       @db.VarChar(50)
+  prenume    String       @db.VarChar(50)
+  email      String       @unique @db.VarChar(100)
+  grad       GradDidactic @default(ASISTENT)
+  predari    Predare[]
+  utilizator Utilizator?
 
   @@map("profesori")
 }
@@ -145,4 +147,47 @@ model Predare {
   @@unique([profesorId, disciplinaId, anUniversitarId])
   @@index([disciplinaId])
   @@map("predari")
+}
+
+// Rolul unui utilizator: ce are voie să facă în aplicație.
+enum Rol {
+  ADMIN
+  PROFESOR
+  STUDENT
+
+  @@map("rol")
+}
+
+// Un cont de acces. Un cont de student sau de profesor este legat (1–1)
+// de înregistrarea studentului, respectiv a profesorului.
+model Utilizator {
+  id                  Int              @id @default(autoincrement())
+  email               String           @unique @db.VarChar(100)
+  parolaHash          String           @map("parola_hash") // NU parola, ci hash-ul ei (argon2id)
+  rol                 Rol
+  activ               Boolean          @default(true)
+  studentId           Int?             @unique @map("student_id")
+  profesorId          Int?             @unique @map("profesor_id")
+  student             Student?         @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  profesor            Profesor?        @relation(fields: [profesorId], references: [id], onDelete: Cascade)
+  creatLa             DateTime         @default(now()) @map("creat_la") @db.Timestamptz(3)
+  ultimaAutentificare DateTime?        @map("ultima_autentificare") @db.Timestamptz(3)
+  sesiuni             SesiuneRefresh[]
+
+  @@map("utilizatori")
+}
+
+// O sesiune deschisă (un browser autentificat). Păstrăm doar hash-ul
+// refresh token-ului: cine fură baza de date nu poate folosi token-urile.
+model SesiuneRefresh {
+  id           String     @id @default(uuid()) @db.Uuid
+  utilizatorId Int        @map("utilizator_id")
+  utilizator   Utilizator @relation(fields: [utilizatorId], references: [id], onDelete: Cascade)
+  tokenHash    String     @unique @map("token_hash")
+  expiraLa     DateTime   @map("expira_la") @db.Timestamptz(3)
+  revocataLa   DateTime?  @map("revocata_la") @db.Timestamptz(3)
+  creataLa     DateTime   @default(now()) @map("creata_la") @db.Timestamptz(3)
+
+  @@index([utilizatorId])
+  @@map("sesiuni_refresh")
 }
