@@ -66,3 +66,33 @@ button:hover { background: var(--albastru-deschis); }
 .tabel tbody tr:hover { background: #f6f8fa; }
 
 .nota { color: var(--text-slab); font-size: 0.9rem; }
+
+/* titlul paginii, cu butonul de adăugare în dreapta */
+.titlu-pagina { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
+.titlu-pagina h1 { margin: 0; }
+
+/* formulare */
+.formular { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.75rem 1rem; }
+.formular h2, .formular .mesaj, .formular .butoane { grid-column: 1 / -1; margin: 0; }
+.formular label { display: flex; flex-direction: column; gap: 0.25rem; color: var(--text-slab); font-size: 0.9rem; }
+input, select {
+  font: inherit; padding: 0.4rem 0.6rem; border: 1px solid var(--chenar); border-radius: 6px; background: #fff;
+}
+input:focus, select:focus { outline: 2px solid var(--albastru-deschis); outline-offset: -1px; }
+.butoane { display: flex; gap: 0.5rem; }
+.mesaj ul { margin: 0; padding-left: 1.2rem; }
+
+/* variante de butoane */
+button.secundar { background: #fff; color: var(--albastru); }
+button.secundar:hover { background: #eef2f7; }
+button.pericol { background: #fff; color: var(--rosu); border-color: var(--rosu); }
+button.pericol:hover { background: #ffebe9; }
+button.mic { padding: 0.2rem 0.6rem; font-size: 0.85rem; }
+button:disabled { opacity: 0.6; cursor: default; }
+
+/* coloane de tabel */
+.tabel .numar { text-align: center; width: 5rem; }
+.tabel .actiuni { text-align: right; white-space: nowrap; width: 1%; }
+.tabel .actiuni button + button { margin-left: 0.4rem; }
+
+.bara-filtre { margin-bottom: 0.75rem; color: var(--text-slab); }

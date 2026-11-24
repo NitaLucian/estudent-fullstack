@@ -27,7 +27,7 @@ export class HealthController {
     return {
       status: 'ok',
       aplicatie: 'eStudent API',
-      versiune: '0.2.0',
+      versiune: '0.3.0',
       ora: new Date().toISOString(),
       bazaDeDate,
     };

@@ -16,6 +16,15 @@ const specializari = [
   { cod: 'IEC', denumire: 'Inginerie economică' },
 ];
 
+// Câte grupe are fiecare specializare în fiecare an de studiu (anii 1–4).
+const grupePeAn: Record<string, number[]> = {
+  CTI: [3, 3, 2, 2],
+  AIA: [2, 2, 2, 1],
+  IE: [2, 1, 1, 1],
+  EA: [1, 1, 1, 1],
+  IEC: [1, 1, 1, 1],
+};
+
 async function main() {
   for (const s of specializari) {
     await prisma.specializare.upsert({
@@ -24,7 +33,24 @@ async function main() {
       create: s,
     });
   }
-  console.log(`Seed: ${specializari.length} specializări.`);
+
+  // Codul grupei: specializarea + anul + numărul grupei, de ex. CTI-1102
+  let nrGrupe = 0;
+  for (const [codSpec, numere] of Object.entries(grupePeAn)) {
+    const spec = await prisma.specializare.findUniqueOrThrow({ where: { cod: codSpec } });
+    for (let an = 1; an <= numere.length; an++) {
+      for (let nr = 1; nr <= numere[an - 1]; nr++) {
+        const cod = `${codSpec}-${an}1${String(nr).padStart(2, '0')}`;
+        await prisma.grupa.upsert({
+          where: { cod },
+          update: { an, specializareId: spec.id },
+          create: { cod, an, specializareId: spec.id },
+        });
+        nrGrupe++;
+      }
+    }
+  }
+  console.log(`Seed: ${specializari.length} specializări, ${nrGrupe} grupe.`);
 }
 
 main()

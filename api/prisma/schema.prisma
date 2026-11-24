@@ -14,9 +14,22 @@ datasource db {
 
 // O specializare (program de studii), de exemplu „Calculatoare”.
 model Specializare {
-  id       Int    @id @default(autoincrement())
-  cod      String @unique @db.VarChar(15)
-  denumire String @db.VarChar(100)
+  id       Int     @id @default(autoincrement())
+  cod      String  @unique @db.VarChar(15)
+  denumire String  @db.VarChar(100)
+  grupe    Grupa[] // relația 1–N: o specializare are mai multe grupe
 
   @@map("specializari") // numele tabelului în PostgreSQL
+}
+
+// O grupă de studenți, dintr-un an de studiu al unei specializări.
+model Grupa {
+  id             Int          @id @default(autoincrement())
+  cod            String       @unique @db.VarChar(15)
+  an             Int          @db.SmallInt // anul de studiu: 1–4
+  specializareId Int          @map("specializare_id")
+  specializare   Specializare @relation(fields: [specializareId], references: [id], onDelete: Restrict)
+
+  @@index([specializareId])
+  @@map("grupe")
 }
