@@ -3,8 +3,11 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { CreateGrupaDto } from './dto/create-grupa.dto.js';
 import { UpdateGrupaDto } from './dto/update-grupa.dto.js';
 
-// ce date ale specializării trimitem împreună cu fiecare grupă
-const cuSpecializare = { specializare: { select: { id: true, cod: true, denumire: true } } };
+// ce date ale specializării și ale anului de studiu trimitem împreună cu fiecare grupă
+const cuSpecializare = {
+  specializare: { select: { id: true, cod: true, denumire: true } },
+  anStudiu: { select: { id: true, numar: true, denumire: true } },
+};
 
 @Injectable()
 export class GrupeService {
@@ -15,7 +18,7 @@ export class GrupeService {
     return this.prisma.grupa.findMany({
       where: specializareId ? { specializareId } : {},
       include: cuSpecializare,
-      orderBy: [{ specializare: { cod: 'asc' } }, { an: 'asc' }, { cod: 'asc' }],
+      orderBy: [{ specializare: { cod: 'asc' } }, { anStudiu: { numar: 'asc' } }, { cod: 'asc' }],
     });
   }
 
@@ -27,11 +30,13 @@ export class GrupeService {
 
   async create(date: CreateGrupaDto) {
     await this.verificaSpecializarea(date.specializareId);
+    await this.verificaAnul(date.anStudiuId);
     return this.prisma.grupa.create({ data: date, include: cuSpecializare });
   }
 
   async update(id: number, date: UpdateGrupaDto) {
     if (date.specializareId !== undefined) await this.verificaSpecializarea(date.specializareId);
+    if (date.anStudiuId !== undefined) await this.verificaAnul(date.anStudiuId);
     return this.prisma.grupa.update({ where: { id }, data: date, include: cuSpecializare });
   }
 
@@ -43,5 +48,10 @@ export class GrupeService {
   private async verificaSpecializarea(id: number) {
     const exista = await this.prisma.specializare.count({ where: { id } });
     if (!exista) throw new BadRequestException(`Specializarea ${id} nu există`);
+  }
+
+  private async verificaAnul(id: number) {
+    const exista = await this.prisma.anStudiu.count({ where: { id } });
+    if (!exista) throw new BadRequestException(`Anul de studiu ${id} nu există`);
   }
 }

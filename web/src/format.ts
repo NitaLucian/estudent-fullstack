@@ -12,3 +12,11 @@ export function formatData(iso: string | null | undefined): string {
 export function pentruInputData(iso: string | null | undefined): string {
   return iso ? iso.slice(0, 10) : ''
 }
+
+// denumirile gradelor didactice, pentru afișare
+export const GRADE: Record<'ASISTENT' | 'LECTOR' | 'CONFERENTIAR' | 'PROFESOR', string> = {
+  ASISTENT: 'asistent',
+  LECTOR: 'lector',
+  CONFERENTIAR: 'conferențiar',
+  PROFESOR: 'profesor',
+}

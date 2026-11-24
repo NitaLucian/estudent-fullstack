@@ -104,7 +104,6 @@ export default function StudentiPage() {
         <select value={ordonare} onChange={(e) => setParams(cuParametru(params, 'ordonare', e.target.value))}>
           <option value="nume">ordonați după nume</option>
           <option value="nrMatricol">ordonați după nr. matricol</option>
-          <option value="grupa">ordonați după grupă</option>
         </select>
       </div>
 

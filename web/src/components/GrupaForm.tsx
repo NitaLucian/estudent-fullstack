@@ -1,17 +1,18 @@
 import { useState, type FormEvent } from 'react'
 import { mesajeDin } from '../api'
-import type { GrupaDate, Specializare } from '../tipuri'
+import type { AnStudiu, GrupaDate, Specializare } from '../tipuri'
 import MesajEroare from './MesajEroare'
 
 interface Props {
   initial: GrupaDate
   titlu: string
   specializari: Specializare[] // pentru lista de alegere
+  ani: AnStudiu[]
   onSalveaza: (date: GrupaDate) => Promise<void>
   onRenunta: () => void
 }
 
-export default function GrupaForm({ initial, titlu, specializari, onSalveaza, onRenunta }: Props) {
+export default function GrupaForm({ initial, titlu, specializari, ani, onSalveaza, onRenunta }: Props) {
   // o singură variabilă de stare pentru toate câmpurile
   const [date, setDate] = useState<GrupaDate>(initial)
   const [erori, setErori] = useState<string[]>([])
@@ -28,7 +29,7 @@ export default function GrupaForm({ initial, titlu, specializari, onSalveaza, on
       // (cu id, specializare ...), iar serverul respinge câmpurile pe care nu le cunoaște
       await onSalveaza({
         cod: date.cod.trim().toUpperCase(),
-        an: date.an,
+        anStudiuId: date.anStudiuId,
         specializareId: date.specializareId,
       })
     } catch (e) {
@@ -58,9 +59,10 @@ export default function GrupaForm({ initial, titlu, specializari, onSalveaza, on
       </label>
       <label>
         An de studiu
-        <select value={date.an} onChange={(e) => schimba('an', Number(e.target.value))}>
-          {[1, 2, 3, 4].map((an) => (
-            <option key={an} value={an}>Anul {an}</option>
+        <select value={date.anStudiuId} onChange={(e) => schimba('anStudiuId', Number(e.target.value))} required>
+          <option value={0} disabled>– alegeți –</option>
+          {ani.map((a) => (
+            <option key={a.id} value={a.id}>{a.denumire}</option>
           ))}
         </select>
       </label>

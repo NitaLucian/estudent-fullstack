@@ -2,7 +2,7 @@ import { Type } from 'class-transformer';
 import { IsIn, IsInt, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
 
 // Parametrii din URL pentru lista de studenți:
-//   /api/studenti?pagina=2&perPagina=20&cauta=pop&specializareId=1&grupaId=3&ordonare=nume
+//   /api/studenti?pagina=2&perPagina=20&cauta=pop&specializareId=1&grupaId=3&ordonare=nrMatricol
 // Tot ce vine din URL este text; @Type(() => Number) îl transformă în număr înainte de validare.
 export class ListaStudentiDto {
   @IsOptional()
@@ -34,6 +34,6 @@ export class ListaStudentiDto {
   grupaId?: number;
 
   @IsOptional()
-  @IsIn(['nume', 'nrMatricol', 'grupa'], { message: 'Ordonarea poate fi: nume, nrMatricol, grupa' })
-  ordonare: 'nume' | 'nrMatricol' | 'grupa' = 'nume';
+  @IsIn(['nume', 'nrMatricol'], { message: 'Ordonarea poate fi: nume, nrMatricol' })
+  ordonare: 'nume' | 'nrMatricol' = 'nume';
 }

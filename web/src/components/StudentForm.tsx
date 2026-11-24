@@ -13,6 +13,8 @@ interface Props {
 export default function StudentForm({ initial, grupe, onSalveaza, onRenunta }: Props) {
   const [date, setDate] = useState<StudentDate>(initial)
   const [erori, setErori] = useState<string[]>([])
+  // grupa se alege doar la adăugare; ulterior, grupa se schimbă din înscrieri
+  const cuGrupa = initial.grupaId !== undefined
 
   function schimba<K extends keyof StudentDate>(camp: K, valoare: StudentDate[K]) {
     setDate({ ...date, [camp]: valoare })
@@ -27,7 +29,7 @@ export default function StudentForm({ initial, grupe, onSalveaza, onRenunta }: P
         prenume: date.prenume.trim(),
         email: date.email.trim().toLowerCase(),
         dataNasterii: date.dataNasterii || null, // textul gol devine null
-        grupaId: date.grupaId,
+        ...(cuGrupa && { grupaId: date.grupaId }),
       })
     } catch (e) {
       setErori(mesajeDin(e))
@@ -56,18 +58,20 @@ export default function StudentForm({ initial, grupe, onSalveaza, onRenunta }: P
         Data nașterii
         <input type="date" value={date.dataNasterii ?? ''} onChange={(e) => schimba('dataNasterii', e.target.value)} />
       </label>
-      <label>
-        Grupa
-        <select
-          value={date.grupaId ?? ''}
-          onChange={(e) => schimba('grupaId', e.target.value ? Number(e.target.value) : null)}
-        >
-          <option value="">– fără grupă –</option>
-          {grupe.map((g) => (
-            <option key={g.id} value={g.id}>{g.cod} (anul {g.an})</option>
-          ))}
-        </select>
-      </label>
+      {cuGrupa && (
+        <label>
+          Grupa
+          <select
+            value={date.grupaId ?? ''}
+            onChange={(e) => schimba('grupaId', e.target.value ? Number(e.target.value) : null)}
+          >
+            <option value="">– fără grupă –</option>
+            {grupe.map((g) => (
+              <option key={g.id} value={g.id}>{g.cod} (anul {g.anStudiu.numar})</option>
+            ))}
+          </select>
+        </label>
+      )}
       <MesajEroare mesaje={erori} />
       <div className="butoane">
         <button type="submit">Salvează</button>

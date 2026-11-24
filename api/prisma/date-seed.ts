@@ -47,7 +47,71 @@ export function generator(samanta: number) {
   };
 }
 
-// textul fără diacritice, cu litere mici (pentru adresele de email)
+// textul fără diacritice, cu litere mici (pentru adresele de email):
+// normalize('NFD') desparte „ă” în „a” + semnul „˘”, iar \p{M} (orice semn diacritic) le elimină
 export function faraDiacritice(text: string): string {
-  return text.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+  return text.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
 }
+
+export const aniStudiu = [
+  { numar: 1, denumire: 'Anul I' },
+  { numar: 2, denumire: 'Anul II' },
+  { numar: 3, denumire: 'Anul III' },
+  { numar: 4, denumire: 'Anul IV' },
+];
+
+// Doi ani universitari: cel trecut (pentru istoric) și cel curent, calculați față de AN_INCEPUT.
+const anUniversitar = (inceput: number, curent: boolean) => ({
+  cod: `${inceput}-${inceput + 1}`, // de exemplu 2028-2029
+  dataInceput: new Date(Date.UTC(inceput, 9, 1)), // 1 octombrie
+  dataSfarsit: new Date(Date.UTC(inceput + 1, 8, 30)), // 30 septembrie
+  curent,
+});
+export const anTrecut = anUniversitar(AN_INCEPUT - 1, false);
+export const anCurent = anUniversitar(AN_INCEPUT, true);
+export const aniUniversitari = [anTrecut, anCurent];
+
+// Planul de învățământ (simplificat): aceleași denumiri pentru toate specializările.
+// planInvatamant[an - 1][semestru - 1] = lista disciplinelor; creditele sunt pe aceeași poziție în CREDITE.
+export const planInvatamant: string[][][] = [
+  [
+    ['Analiză matematică', 'Algebră liniară', 'Programarea calculatoarelor', 'Fizică', 'Limba engleză I'],
+    ['Matematici speciale', 'Structuri de date', 'Electrotehnică', 'Grafică asistată', 'Limba engleză II'],
+  ],
+  [
+    ['Programare orientată pe obiecte', 'Baze de date', 'Circuite electronice', 'Metode numerice', 'Comunicare profesională'],
+    ['Proiectarea algoritmilor', 'Sisteme de operare', 'Teoria sistemelor', 'Microprocesoare', 'Economie'],
+  ],
+  [
+    ['Rețele de calculatoare', 'Ingineria programării', 'Prelucrarea semnalelor', 'Inteligență artificială', 'Electronică de putere'],
+    ['Aplicații web', 'Securitatea informației', 'Sisteme încorporate', 'Grafică pe calculator', 'Management'],
+  ],
+  [
+    ['Sisteme distribuite', 'Cloud computing', 'Proiectare asistată', 'Disciplină opțională I', 'Disciplină opțională II'],
+    ['Calitatea produselor software', 'Proiect de diplomă', 'Etică profesională', 'Disciplină opțională III', 'Antreprenoriat'],
+  ],
+];
+export const CREDITE = [7, 6, 6, 6, 5]; // 30 de credite pe semestru
+
+export const profesori: { nume: string; prenume: string; grad: 'ASISTENT' | 'LECTOR' | 'CONFERENTIAR' | 'PROFESOR' }[] = [
+  { nume: 'Andrei', prenume: 'Mihaela', grad: 'PROFESOR' },
+  { nume: 'Bălan', prenume: 'Victor', grad: 'PROFESOR' },
+  { nume: 'Cazacu', prenume: 'Dan', grad: 'PROFESOR' },
+  { nume: 'Dobre', prenume: 'Laura', grad: 'CONFERENTIAR' },
+  { nume: 'Enache', prenume: 'Sorin', grad: 'CONFERENTIAR' },
+  { nume: 'Filip', prenume: 'Corina', grad: 'CONFERENTIAR' },
+  { nume: 'Grigore', prenume: 'Paul', grad: 'CONFERENTIAR' },
+  { nume: 'Hagiu', prenume: 'Monica', grad: 'LECTOR' },
+  { nume: 'Iordache', prenume: 'Florin', grad: 'LECTOR' },
+  { nume: 'Jitaru', prenume: 'Oana', grad: 'LECTOR' },
+  { nume: 'Lazăr', prenume: 'Cosmin', grad: 'LECTOR' },
+  { nume: 'Manole', prenume: 'Adina', grad: 'LECTOR' },
+  { nume: 'Neculai', prenume: 'Eugen', grad: 'LECTOR' },
+  { nume: 'Olaru', prenume: 'Simona', grad: 'LECTOR' },
+  { nume: 'Pavel', prenume: 'Lucian', grad: 'ASISTENT' },
+  { nume: 'Rotaru', prenume: 'Iulia', grad: 'ASISTENT' },
+  { nume: 'Sandu', prenume: 'Marius', grad: 'ASISTENT' },
+  { nume: 'Tănase', prenume: 'Roxana', grad: 'ASISTENT' },
+  { nume: 'Ursu', prenume: 'Claudiu', grad: 'ASISTENT' },
+  { nume: 'Vasilescu', prenume: 'Anca', grad: 'ASISTENT' },
+];

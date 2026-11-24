@@ -31,7 +31,6 @@ export default function StudentFormPage() {
           prenume: s.prenume,
           email: s.email,
           dataNasterii: pentruInputData(s.dataNasterii),
-          grupaId: s.grupaId,
         }),
       )
       .catch((e) => setErori(mesajeDin(e)))

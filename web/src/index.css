@@ -28,7 +28,7 @@ code { background: #eef1f4; padding: 0 0.25rem; border-radius: 4px; }
 .subtitlu { opacity: 0.8; }
 
 /* zona de conținut, centrată */
-.continut { max-width: 1000px; margin: 1.5rem auto; padding: 0 1.5rem; }
+.continut { max-width: 1200px; margin: 1.5rem auto; padding: 0 1.5rem; }
 
 .card {
   background: #fff; border: 1px solid var(--chenar); border-radius: 10px;
@@ -112,3 +112,11 @@ button:disabled { opacity: 0.6; cursor: default; }
 .paginare { display: flex; justify-content: space-between; align-items: center; margin-top: 0.75rem; }
 .paginare .butoane { align-items: center; }
 .tabel td.gol { text-align: center; color: var(--text-slab); padding: 1.5rem; }
+
+/* o etichetă mică lângă un text (de ex. „curent”) */
+.eticheta {
+  display: inline-block; margin-left: 0.5rem; padding: 0 0.5rem; border-radius: 999px;
+  background: #dafbe1; color: var(--verde); font-size: 0.8rem; font-weight: 600;
+}
+.tabel td a + a { margin-left: 0.5rem; }
+.tabel td:first-child { white-space: nowrap; } /* codurile nu se rup pe două rânduri */

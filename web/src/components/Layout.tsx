@@ -5,6 +5,9 @@ const meniu = [
   { adresa: '/studenti', eticheta: 'Studenți' },
   { adresa: '/grupe', eticheta: 'Grupe' },
   { adresa: '/specializari', eticheta: 'Specializări' },
+  { adresa: '/discipline', eticheta: 'Discipline' },
+  { adresa: '/profesori', eticheta: 'Profesori' },
+  { adresa: '/ani-universitari', eticheta: 'Ani universitari' },
 ]
 
 // Scheletul comun al paginilor: bara de sus cu meniul și, dedesubt,

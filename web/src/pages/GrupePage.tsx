@@ -2,19 +2,23 @@ import { useEffect, useState } from 'react'
 import { citeste, creeaza, mesajeDin, modifica, sterge } from '../api'
 import GrupaForm from '../components/GrupaForm'
 import MesajEroare from '../components/MesajEroare'
-import type { Grupa, GrupaDate, Specializare } from '../tipuri'
+import type { AnStudiu, Grupa, GrupaDate, Specializare } from '../tipuri'
 
 type StareFormular = { mod: 'ascuns' } | { mod: 'adaugare' } | { mod: 'modificare'; grupa: Grupa }
 
 export default function GrupePage() {
   const [grupe, setGrupe] = useState<Grupa[]>([])
   const [specializari, setSpecializari] = useState<Specializare[]>([])
+  const [ani, setAni] = useState<AnStudiu[]>([])
   const [filtru, setFiltru] = useState(0) // 0 = toate specializările
   const [erori, setErori] = useState<string[]>([])
   const [formular, setFormular] = useState<StareFormular>({ mod: 'ascuns' })
   const [versiune, setVersiune] = useState(0)
 
-  // lista de specializări (pentru filtru și formular) se citește o singură dată
+  // listele pentru filtru și formular se citesc o singură dată
+  useEffect(() => {
+    citeste<AnStudiu[]>('/api/ani-studiu').then(setAni).catch((e) => setErori(mesajeDin(e)))
+  }, [])
   useEffect(() => {
     citeste<Specializare[]>('/api/specializari')
       .then(setSpecializari)
@@ -48,7 +52,7 @@ export default function GrupePage() {
     }
   }
 
-  const initialNou: GrupaDate = { cod: '', an: 1, specializareId: filtru }
+  const initialNou: GrupaDate = { cod: '', anStudiuId: ani[0]?.id ?? 0, specializareId: filtru }
 
   return (
     <>
@@ -75,6 +79,7 @@ export default function GrupePage() {
           titlu={formular.mod === 'modificare' ? `Modificare ${formular.grupa.cod}` : 'Grupă nouă'}
           initial={formular.mod === 'modificare' ? formular.grupa : initialNou}
           specializari={specializari}
+          ani={ani}
           onSalveaza={salveaza}
           onRenunta={() => setFormular({ mod: 'ascuns' })}
         />
@@ -96,7 +101,7 @@ export default function GrupePage() {
             <tr key={g.id}>
               <td><strong>{g.cod}</strong></td>
               <td>{g.specializare.cod} – {g.specializare.denumire}</td>
-              <td className="numar">{g.an}</td>
+              <td className="numar">{g.anStudiu.numar}</td>
               <td className="actiuni">
                 <button className="mic secundar" onClick={() => setFormular({ mod: 'modificare', grupa: g })}>
                   Modifică

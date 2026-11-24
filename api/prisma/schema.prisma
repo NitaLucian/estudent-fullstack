@@ -14,39 +14,135 @@ datasource db {
 
 // O specializare (program de studii), de exemplu „Calculatoare”.
 model Specializare {
-  id       Int     @id @default(autoincrement())
-  cod      String  @unique @db.VarChar(15)
-  denumire String  @db.VarChar(100)
-  grupe    Grupa[] // relația 1–N: o specializare are mai multe grupe
+  id         Int          @id @default(autoincrement())
+  cod        String       @unique @db.VarChar(15)
+  denumire   String       @db.VarChar(100)
+  grupe      Grupa[] // relația 1–N: o specializare are mai multe grupe
+  discipline Disciplina[]
 
   @@map("specializari") // numele tabelului în PostgreSQL
+}
+
+// Anul de studiu: 1, 2, 3, 4 („Anul I” ...).
+model AnStudiu {
+  id         Int          @id @default(autoincrement())
+  numar      Int          @unique @db.SmallInt
+  denumire   String       @db.VarChar(30)
+  grupe      Grupa[]
+  discipline Disciplina[]
+
+  @@map("ani_studiu")
 }
 
 // O grupă de studenți, dintr-un an de studiu al unei specializări.
 model Grupa {
   id             Int          @id @default(autoincrement())
   cod            String       @unique @db.VarChar(15)
-  an             Int          @db.SmallInt // anul de studiu: 1–4
+  anStudiuId     Int          @map("an_studiu_id")
+  anStudiu       AnStudiu     @relation(fields: [anStudiuId], references: [id], onDelete: Restrict)
   specializareId Int          @map("specializare_id")
   specializare   Specializare @relation(fields: [specializareId], references: [id], onDelete: Restrict)
-  studenti       Student[]
+  inscrieri      Inscriere[]
 
   @@index([specializareId])
+  @@index([anStudiuId])
   @@map("grupe")
 }
 
-// Un student. Deocamdată este legat direct de o grupă (opțional).
+// Un student. Grupa în care se află într-un an universitar este dată de înscrieri.
 model Student {
-  id           Int       @id @default(autoincrement())
-  nrMatricol   String    @unique @map("nr_matricol") @db.VarChar(12)
-  nume         String    @db.VarChar(50)
-  prenume      String    @db.VarChar(50)
-  email        String    @unique @db.VarChar(100)
-  dataNasterii DateTime? @map("data_nasterii") @db.Date
-  grupaId      Int?      @map("grupa_id")
-  grupa        Grupa?    @relation(fields: [grupaId], references: [id], onDelete: Restrict)
+  id           Int         @id @default(autoincrement())
+  nrMatricol   String      @unique @map("nr_matricol") @db.VarChar(12)
+  nume         String      @db.VarChar(50)
+  prenume      String      @db.VarChar(50)
+  email        String      @unique @db.VarChar(100)
+  dataNasterii DateTime?   @map("data_nasterii") @db.Date
+  inscrieri    Inscriere[]
 
-  @@index([grupaId])
   @@index([nume, prenume])
   @@map("studenti")
+}
+
+// Un an universitar, de exemplu „2026-2027”. Unul singur este cel curent.
+model AnUniversitar {
+  id          Int         @id @default(autoincrement())
+  cod         String      @unique @db.VarChar(9)
+  dataInceput DateTime    @map("data_inceput") @db.Date
+  dataSfarsit DateTime    @map("data_sfarsit") @db.Date
+  curent      Boolean     @default(false)
+  inscrieri   Inscriere[]
+  predari     Predare[]
+
+  @@map("ani_universitari")
+}
+
+// Înscrierea unui student într-o grupă, într-un an universitar
+// (tabelul de legătură al relației M–N dintre studenți și grupe).
+model Inscriere {
+  id              Int           @id @default(autoincrement())
+  studentId       Int           @map("student_id")
+  grupaId         Int           @map("grupa_id")
+  anUniversitarId Int           @map("an_universitar_id")
+  student         Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  grupa           Grupa         @relation(fields: [grupaId], references: [id], onDelete: Restrict)
+  anUniversitar   AnUniversitar @relation(fields: [anUniversitarId], references: [id], onDelete: Restrict)
+
+  @@unique([studentId, anUniversitarId]) // un student are o singură grupă într-un an universitar
+  @@index([grupaId])
+  @@index([anUniversitarId])
+  @@map("inscrieri")
+}
+
+// O disciplină din planul de învățământ al unei specializări, într-un an și un semestru.
+model Disciplina {
+  id             Int          @id @default(autoincrement())
+  cod            String       @unique @db.VarChar(20)
+  denumire       String       @db.VarChar(100)
+  credite        Int          @db.SmallInt
+  semestru       Int          @db.SmallInt // 1 sau 2
+  specializareId Int          @map("specializare_id")
+  anStudiuId     Int          @map("an_studiu_id")
+  specializare   Specializare @relation(fields: [specializareId], references: [id], onDelete: Restrict)
+  anStudiu       AnStudiu     @relation(fields: [anStudiuId], references: [id], onDelete: Restrict)
+  predari        Predare[]
+
+  @@index([specializareId, anStudiuId])
+  @@map("discipline")
+}
+
+// Gradul didactic: o listă fixă de valori (în PostgreSQL devine un tip ENUM).
+enum GradDidactic {
+  ASISTENT
+  LECTOR
+  CONFERENTIAR
+  PROFESOR
+
+  @@map("grad_didactic")
+}
+
+model Profesor {
+  id      Int          @id @default(autoincrement())
+  nume    String       @db.VarChar(50)
+  prenume String       @db.VarChar(50)
+  email   String       @unique @db.VarChar(100)
+  grad    GradDidactic @default(ASISTENT)
+  predari Predare[]
+
+  @@map("profesori")
+}
+
+// Ce discipline predă un profesor într-un an universitar
+// (relație M–N între profesori și discipline, cu o informație în plus: anul).
+model Predare {
+  id              Int           @id @default(autoincrement())
+  profesorId      Int           @map("profesor_id")
+  disciplinaId    Int           @map("disciplina_id")
+  anUniversitarId Int           @map("an_universitar_id")
+  profesor        Profesor      @relation(fields: [profesorId], references: [id], onDelete: Cascade)
+  disciplina      Disciplina    @relation(fields: [disciplinaId], references: [id], onDelete: Cascade)
+  anUniversitar   AnUniversitar @relation(fields: [anUniversitarId], references: [id], onDelete: Restrict)
+
+  @@unique([profesorId, disciplinaId, anUniversitarId])
+  @@index([disciplinaId])
+  @@map("predari")
 }
