@@ -1,0 +1,12 @@
+# dependențele instalate de npm (se refac cu npm install)
+node_modules/
+# rezultatul compilării
+dist/
+*.tsbuildinfo
+# fișiere cu secrete și setări locale: NU intră în Git
+.env
+*.local
+# fișiere ale sistemului de operare / editorului
+.DS_Store
+.idea/
+*.log

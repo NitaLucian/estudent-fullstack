@@ -1,0 +1,54 @@
+/* Stilurile comune ale aplicației eStudent. */
+:root {
+  --albastru: #1f4e79;
+  --albastru-deschis: #2e75b6;
+  --fundal: #f4f6f9;
+  --chenar: #d0d7de;
+  --text: #1f2328;
+  --text-slab: #59636e;
+  --verde: #1a7f37;
+  --rosu: #cf222e;
+  font-family: system-ui, 'Segoe UI', Arial, sans-serif;
+  color: var(--text);
+  background: var(--fundal);
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; }
+h1 { font-size: 1.6rem; margin: 0 0 0.5rem; }
+h2 { font-size: 1.15rem; margin: 0 0 0.75rem; color: var(--albastru); }
+code { background: #eef1f4; padding: 0 0.25rem; border-radius: 4px; }
+
+/* bara de sus */
+.bara-sus {
+  display: flex; align-items: baseline; gap: 1rem;
+  padding: 0.8rem 1.5rem; background: var(--albastru); color: #fff;
+}
+.logo { font-size: 1.4rem; font-weight: 700; }
+.subtitlu { opacity: 0.8; }
+
+/* zona de conținut, centrată */
+.continut { max-width: 1000px; margin: 1.5rem auto; padding: 0 1.5rem; }
+
+.card {
+  background: #fff; border: 1px solid var(--chenar); border-radius: 10px;
+  padding: 1.25rem 1.5rem; margin: 1rem 0;
+}
+
+/* listă de perechi etichetă–valoare */
+.detalii { display: grid; grid-template-columns: 9rem 1fr; gap: 0.4rem 1rem; margin: 0 0 1rem; }
+.detalii dt { color: var(--text-slab); }
+.detalii dd { margin: 0; font-weight: 600; }
+
+.punct { display: inline-block; width: 0.7rem; height: 0.7rem; border-radius: 50%; }
+.punct.verde { background: var(--verde); }
+.punct.rosu { background: var(--rosu); }
+
+.mesaj { padding: 0.6rem 0.8rem; border-radius: 6px; }
+.mesaj.eroare { background: #ffebe9; color: var(--rosu); }
+
+button {
+  font: inherit; cursor: pointer; padding: 0.45rem 1rem; border-radius: 6px;
+  border: 1px solid var(--albastru); background: var(--albastru); color: #fff;
+}
+button:hover { background: var(--albastru-deschis); }
