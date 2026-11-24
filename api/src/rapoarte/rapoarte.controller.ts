@@ -27,6 +27,15 @@ export class RapoarteController {
     return this.service.clasament(f);
   }
 
+  @Get('clasament.csv')
+  @Header('Content-Type', 'text/csv; charset=utf-8')
+  @Header('Content-Disposition', 'attachment; filename="clasament.csv"')
+  @ApiProduces('text/csv')
+  @ApiOkResponse({ schema: { type: 'string' } })
+  clasamentCsv(@Query() f: FiltreRaportDto): Promise<string> {
+    return this.service.clasamentCsv(f);
+  }
+
   // Răspunsul nu este JSON, ci un fișier text CSV. Content-Disposition: attachment
   // îi spune browserului să îl salveze ca fișier, cu numele dat.
   @Get('grupe.csv')

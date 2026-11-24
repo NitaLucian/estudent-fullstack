@@ -102,6 +102,21 @@ export class RapoarteService {
       ORDER BY sp.cod, a.numar, "loc", s.nume, s.prenume`;
   }
 
+  // Clasamentul, în format CSV: refolosim interogarea și funcția campCsv.
+  async clasamentCsv(f: FiltreRaportDto): Promise<string> {
+    const locuri = await this.clasament(f);
+    const antet = ['Loc', 'Specializare', 'An', 'Grupa', 'Nr. matricol', 'Nume', 'Prenume',
+      'Media ponderată', 'Media aritmetică', 'Credite obținute', 'Restanțe'];
+    // virgula zecimală, ca Excel în română să recunoască numerele
+    const zecimal = (x: number | null) => (x === null ? null : x.toFixed(2).replace('.', ','));
+    const randuri = locuri.map((l) => [
+      l.loc, l.specializare, l.an, l.grupa, l.nrMatricol, l.nume, l.prenume,
+      zecimal(l.mediePonderata), zecimal(l.medieAritmetica), l.crediteObtinute, l.restante,
+    ]);
+    const BOM = String.fromCharCode(0xfeff);
+    return BOM + [antet, ...randuri].map((r) => r.map(campCsv).join(';')).join('\r\n');
+  }
+
   // 4. Grupele cu studenții lor, în format CSV (se deschide în Excel / LibreOffice)
   async grupeCsv(f: FiltreRaportDto): Promise<string> {
     const anUniversitarId = await this.ani.idSauCurent(f.anUniversitarId);

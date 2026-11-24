@@ -468,6 +468,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/rapoarte/clasament.csv": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["RapoarteController_clasamentCsv"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/rapoarte/grupe.csv": {
         parameters: {
             query?: never;
@@ -1923,6 +1939,29 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["LocClasament"][];
+                };
+            };
+        };
+    };
+    RapoarteController_clasamentCsv: {
+        parameters: {
+            query?: {
+                anUniversitarId?: number;
+                specializareId?: number;
+                anStudiuId?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/csv": string;
                 };
             };
         };

@@ -54,12 +54,16 @@ export default function RapoartePage() {
   const seteaza = (camp: keyof FiltreRaport, valoare: string) =>
     setFiltre({ ...filtre, [camp]: valoare ? Number(valoare) : undefined })
 
-  async function descarcaCsv() {
+  // un singur mod de descărcare pentru ambele fișiere CSV
+  async function descarcaCsv(raport: 'grupe' | 'clasament') {
     try {
       // parseAs: 'blob' – răspunsul este un fișier, nu JSON
-      const { data, response } = await client.GET('/api/rapoarte/grupe.csv', { params: { query: filtre }, parseAs: 'blob' })
+      const { data, response } =
+        raport === 'grupe'
+          ? await client.GET('/api/rapoarte/grupe.csv', { params: { query: filtre }, parseAs: 'blob' })
+          : await client.GET('/api/rapoarte/clasament.csv', { params: { query: filtre }, parseAs: 'blob' })
       if (!response.ok || !data) throw new Error(`HTTP ${response.status}`)
-      salveazaFisier(data, 'grupe.csv')
+      salveazaFisier(data, `${raport}.csv`)
       setEroareCsv([])
     } catch (e) {
       setEroareCsv(mesajeDin(e))
@@ -72,7 +76,7 @@ export default function RapoartePage() {
     <>
       <div className="titlu-pagina">
         <h1>Rapoarte</h1>
-        <button onClick={descarcaCsv}>Descarcă grupele (CSV)</button>
+        <button onClick={() => descarcaCsv('grupe')}>Descarcă grupele (CSV)</button>
       </div>
       <div className="bara-filtre">
         <select value={filtre.anUniversitarId ?? ''} onChange={(e) => seteaza('anUniversitarId', e.target.value)}>
@@ -112,7 +116,10 @@ export default function RapoartePage() {
       </section>
 
       <section className="card">
-        <h2>Clasament (primii 20)</h2>
+        <div className="titlu-pagina">
+          <h2>Clasament (primii 20)</h2>
+          <button className="secundar" onClick={() => descarcaCsv('clasament')}>Tot clasamentul (CSV)</button>
+        </div>
         <p className="nota">Locul este calculat separat pentru fiecare specializare și an de studiu.</p>
         <Tabel coloane={coloaneClasament} randuri={(clasament.data ?? []).slice(0, 20)} cheie={(r) => r.studentId} />
       </section>
