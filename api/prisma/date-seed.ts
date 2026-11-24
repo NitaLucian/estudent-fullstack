@@ -1,5 +1,9 @@
 // Listele din care seed-ul construiește date de test realiste.
 
+// Parola tuturor conturilor de test (folosită și de testele e2e). DOAR pentru dezvoltare:
+// o bază de date reală nu primește niciodată conturi cu parole cunoscute.
+export const PAROLA_DEMO = 'eStudent2027!';
+
 // Anul universitar începe la 1 octombrie. Datele de test se raportează la data rulării seed-ului,
 // nu la un an fix: în noiembrie 2028, de exemplu, anul universitar curent este 2028-2029.
 // getMonth() numără lunile de la 0, deci 9 înseamnă octombrie.

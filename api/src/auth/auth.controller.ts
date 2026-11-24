@@ -1,6 +1,7 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req, Res } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ApiTags } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import type { CookieOptions, Request, Response } from 'express';
 import { Public, UtilizatorCurent, type UtilizatorJwt } from './auth.decorators.js';
 import { RaspunsAutentificare, UtilizatorAutentificat } from './auth.entity.js';
@@ -10,6 +11,9 @@ import { ParoleService } from './parole.service.js';
 import { LoginDto } from './dto/login.dto.js';
 
 const COOKIE = 'refresh';
+
+// cel mult 5 încercări pe minut de la aceeași adresă IP (ghicirea parolelor, emailuri în masă)
+const STRICT = { implicit: { limit: 5, ttl: 60_000 } };
 
 // /api/auth – autentificarea
 @ApiTags('auth')
@@ -42,6 +46,7 @@ export class AuthController {
   // passthrough: true – setăm cookie-ul prin obiectul Response al Express,
   // dar lăsăm Nest să trimită în continuare valoarea întoarsă ca JSON
   @Public()
+  @Throttle(STRICT)
   @Post('login')
   @HttpCode(HttpStatus.OK)
   async login(@Body() date: LoginDto, @Res({ passthrough: true }) res: Response): Promise<RaspunsAutentificare> {
@@ -65,6 +70,7 @@ export class AuthController {
 
   // „Am uitat parola”: răspunsul este mereu 204, indiferent dacă adresa are cont
   @Public()
+  @Throttle(STRICT)
   @Post('parola-uitata')
   @HttpCode(HttpStatus.NO_CONTENT)
   parolaUitata(@Body() date: ParolaUitataDto): Promise<void> {
@@ -73,6 +79,7 @@ export class AuthController {
 
   // Parola aleasă din legătura primită pe email (cont nou sau resetare)
   @Public()
+  @Throttle(STRICT)
   @Post('parola-noua')
   @HttpCode(HttpStatus.NO_CONTENT)
   parolaNoua(@Body() date: ParolaNouaDto): Promise<void> {

@@ -7,7 +7,7 @@ import { PrismaClient } from '../src/generated/prisma/client.js';
 import {
   AN_INCEPUT, anCurent, anTrecut,
   aniStudiu, aniUniversitari, CREDITE, faraDiacritice, generator, grupePeAn, numeFamilie,
-  planInvatamant, prenumeBaieti, prenumeFete, profesori, specializari,
+  PAROLA_DEMO, planInvatamant, prenumeBaieti, prenumeFete, profesori, specializari,
 } from './date-seed.js';
 
 const prisma = new PrismaClient({
@@ -16,9 +16,6 @@ const prisma = new PrismaClient({
 
 const STUDENTI_PE_GRUPA = 8;
 
-// Parola tuturor conturilor de test. DOAR pentru dezvoltare: o bază de date reală
-// nu primește niciodată conturi cu parole cunoscute.
-const PAROLA_DEMO = 'eStudent2027!';
 
 async function seedSpecializari() {
   for (const s of specializari) {

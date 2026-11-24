@@ -1,0 +1,72 @@
+# Integrare continuă (CI): la fiecare push pe main și la fiecare pull request, GitHub
+# pornește o mașină virtuală curată, instalează proiectul și rulează verificările.
+# Un commit care strică ceva este semnalat imediat, cu un X roșu lângă el.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  api:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: api
+
+    # o bază de date PostgreSQL doar pentru acest job (un container, ca la noi local)
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: estudent
+          POSTGRES_PASSWORD: estudent_ci
+          POSTGRES_DB: estudent
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd "pg_isready -U estudent"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    # variabilele de mediu ale aplicației; în CI nu există fișierul .env
+    env:
+      DATABASE_URL: postgresql://estudent:estudent_ci@localhost:5433/estudent?schema=public
+      TEST_DATABASE_URL: postgresql://estudent:estudent_ci@localhost:5433/estudent_teste?schema=public
+      JWT_SECRET: secret-folosit-doar-de-testele-automate-din-ci
+      # stocarea și emailul sunt înlocuite în teste; valorile doar trec de validarea configurării
+      S3_ENDPOINT: http://localhost:8333
+      S3_BUCKET: estudent
+      S3_ACCESS_KEY: ci
+      S3_SECRET_KEY: ci
+
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: api/package-lock.json
+      - run: npm ci # instalare exact după package-lock.json (rulează și prisma generate)
+      - run: npm run lint
+      - run: npm run build
+      - run: npm test # testele unitare
+      - run: npm run test:e2e # testele e2e (creează și populează baza estudent_teste)
+
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build # include verificarea tipurilor (tsc -b)

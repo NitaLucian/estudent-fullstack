@@ -47,3 +47,11 @@ Cu backendul pornit, regenerați tipurile frontendului:
 
     cd web
     npm run api:tipuri
+
+## Teste
+
+    cd api
+    npm test              # testele unitare (fără bază de date)
+    npm run test:e2e      # testele e2e: aplicația întreagă, pe baza separată estudent_teste
+
+La fiecare push, GitHub Actions rulează aceleași verificări (`.github/workflows/ci.yml`).

@@ -6,7 +6,8 @@ import { NOTA_SALVATA, NotaSalvata } from '../notificari/evenimente.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { StudentiService } from '../studenti/studenti.service.js';
 import { SeteazaNotaDto } from './dto/seteaza-nota.dto.js';
-import { Catalog, DisciplinaCatalog, MedieAn, NotaScurta, SituatieScolara } from './nota.entity.js';
+import { calculeazaMedii } from './medii.js';
+import { Catalog, DisciplinaCatalog, NotaScurta, SituatieScolara } from './nota.entity.js';
 
 const selectNota = { id: true, valoare: true, data: true, modificatLa: true } as const;
 const selectDisciplina = {
@@ -23,9 +24,6 @@ const disciplinaPentruClient = (d: DisciplinaBd): DisciplinaCatalog => ({
   id: d.id, cod: d.cod, denumire: d.denumire, credite: d.credite, semestru: d.semestru,
   specializare: d.specializare.cod, an: d.anStudiu.numar,
 });
-
-// rotunjire la două zecimale
-const rotunjeste = (x: number) => Math.round(x * 100) / 100;
 
 @Injectable()
 export class NoteService {
@@ -140,20 +138,10 @@ export class NoteService {
       disciplina: disciplinaPentruClient(n.disciplina),
     }));
 
-    // mediile: grupăm notele după anul universitar
-    const peAni = new Map<string, typeof lista>();
-    for (const n of lista) peAni.set(n.anUniversitar, [...(peAni.get(n.anUniversitar) ?? []), n]);
-    const medii: MedieAn[] = [...peAni.entries()].map(([anUniversitar, ale]) => {
-      const crediteTotale = ale.reduce((s, n) => s + n.disciplina.credite, 0);
-      return {
-        anUniversitar,
-        numarNote: ale.length,
-        medieAritmetica: rotunjeste(ale.reduce((s, n) => s + n.valoare, 0) / ale.length),
-        mediePonderata: rotunjeste(ale.reduce((s, n) => s + n.valoare * n.disciplina.credite, 0) / crediteTotale),
-        crediteObtinute: ale.filter((n) => n.valoare >= 5).reduce((s, n) => s + n.disciplina.credite, 0),
-        crediteTotale,
-      };
-    });
+    // mediile pe ani: calculul este în funcția pură calculeazaMedii (testată separat)
+    const medii = calculeazaMedii(
+      lista.map((n) => ({ anUniversitar: n.anUniversitar, valoare: n.valoare, credite: n.disciplina.credite })),
+    );
 
     return {
       student: { id: student.id, nrMatricol: student.nrMatricol, nume: student.nume, prenume: student.prenume },
