@@ -17,6 +17,11 @@ export function useStareServer() {
   })
 }
 
+// ---------- statistici ----------
+export function useStatistici() {
+  return useQuery({ queryKey: ['statistici'], queryFn: () => date(client.GET('/api/statistici')) })
+}
+
 // ---------- ani ----------
 export function useAniStudiu() {
   return useQuery({

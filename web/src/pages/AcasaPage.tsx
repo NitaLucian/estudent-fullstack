@@ -1,10 +1,11 @@
 import { mesajeDin } from '../api/client'
-import { useStareServer } from '../api/hooks'
+import { useStareServer, useStatistici } from '../api/hooks'
 
 // Pagina de start: starea serverului și a bazei de date.
 export default function AcasaPage() {
   // useQuery ne dă direct: datele, eroarea, starea de încărcare și o funcție de reîncărcare
   const { data: stare, error, isFetching, refetch } = useStareServer()
+  const { data: statistici } = useStatistici()
 
   return (
     <>
@@ -14,6 +15,19 @@ export default function AcasaPage() {
         (React, în browser) și backendul (NestJS, pe server). Backendul păstrează datele
         într-o bază de date PostgreSQL.
       </p>
+
+      {statistici && (
+        <section className="card">
+          <h2>Facultatea în anul {statistici.anCurent}</h2>
+          <div className="cifre">
+            <div><strong>{statistici.studenti}</strong> studenți</div>
+            <div><strong>{statistici.grupe}</strong> grupe</div>
+            <div><strong>{statistici.specializari}</strong> specializări</div>
+            <div><strong>{statistici.discipline}</strong> discipline</div>
+            <div><strong>{statistici.profesori}</strong> profesori</div>
+          </div>
+        </section>
+      )}
 
       <section className="card">
         <h2>Starea serverului</h2>
