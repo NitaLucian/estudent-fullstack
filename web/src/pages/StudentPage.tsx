@@ -4,6 +4,7 @@ import { mesajeDin } from '../api/client'
 import {
   useAniUniversitari, useCreeazaInscriere, useGrupe, useStergeInscriere, useStergeStudent, useStudent,
 } from '../api/hooks'
+import { usePermisiuni } from '../auth/permisiuni'
 import MesajEroare from '../components/MesajEroare'
 import { formatData } from '../format'
 
@@ -19,6 +20,7 @@ export default function StudentPage() {
   const stergereInscriere = useStergeInscriere()
   const [grupaNoua, setGrupaNoua] = useState(0)
   const [anNou, setAnNou] = useState(0)
+  const { esteAdmin, esteStudent } = usePermisiuni()
 
   async function stergeStudentul() {
     if (!student || !window.confirm(`Ștergeți studentul ${student.nume} ${student.prenume}?`)) return
@@ -36,17 +38,19 @@ export default function StudentPage() {
 
   return (
     <>
-      <p><Link to="/studenti">‹ Înapoi la listă</Link></p>
+      {!esteStudent && <p><Link to="/studenti">‹ Înapoi la listă</Link></p>}
       <MesajEroare mesaje={erori} />
       {student && (
         <>
           <section className="card">
             <div className="titlu-pagina">
               <h1>{student.nume} {student.prenume}</h1>
-              <div className="butoane">
-                <Link className="buton secundar" to={`/studenti/${student.id}/editare`}>Modifică</Link>
-                <button className="pericol" onClick={stergeStudentul}>Șterge</button>
-              </div>
+              {esteAdmin && (
+                <div className="butoane">
+                  <Link className="buton secundar" to={`/studenti/${student.id}/editare`}>Modifică</Link>
+                  <button className="pericol" onClick={stergeStudentul}>Șterge</button>
+                </div>
+              )}
             </div>
             <dl className="detalii">
               <dt>Nr. matricol</dt>
@@ -64,7 +68,7 @@ export default function StudentPage() {
             <h2>Înscrieri</h2>
             <table className="tabel">
               <thead>
-                <tr><th>An universitar</th><th>Grupa</th><th className="numar">An de studiu</th><th className="actiuni"></th></tr>
+                <tr><th>An universitar</th><th>Grupa</th><th className="numar">An de studiu</th>{esteAdmin && <th className="actiuni"></th>}</tr>
               </thead>
               <tbody>
                 {student.inscrieri.map((i) => (
@@ -72,33 +76,37 @@ export default function StudentPage() {
                     <td>{i.anUniversitar.cod}{i.anUniversitar.curent && ' (curent)'}</td>
                     <td>{i.grupa?.cod} – {i.grupa?.specializare.cod}</td>
                     <td className="numar">{i.grupa?.an}</td>
-                    <td className="actiuni">
-                      <button
-                        className="mic pericol"
-                        onClick={() => window.confirm('Ștergeți această înscriere?') && stergereInscriere.mutate(i.id)}
-                      >
-                        Șterge
-                      </button>
-                    </td>
+                    {esteAdmin && (
+                      <td className="actiuni">
+                        <button
+                          className="mic pericol"
+                          onClick={() => window.confirm('Ștergeți această înscriere?') && stergereInscriere.mutate(i.id)}
+                        >
+                          Șterge
+                        </button>
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>
             </table>
-            <form className="bara-filtre" style={{ marginTop: '0.75rem' }} onSubmit={inscrie}>
-              <select value={anNou} onChange={(e) => setAnNou(Number(e.target.value))}>
-                <option value={0}>anul universitar curent</option>
-                {ani.filter((a) => !a.curent).map((a) => (
-                  <option key={a.id} value={a.id}>{a.cod}</option>
-                ))}
-              </select>
-              <select value={grupaNoua} onChange={(e) => setGrupaNoua(Number(e.target.value))} required>
-                <option value={0} disabled>– grupa –</option>
-                {grupe.map((g) => (
-                  <option key={g.id} value={g.id}>{g.cod}</option>
-                ))}
-              </select>
-              <button type="submit" disabled={!grupaNoua || inscriere.isPending}>Înscrie</button>
-            </form>
+            {esteAdmin && (
+              <form className="bara-filtre" style={{ marginTop: '0.75rem' }} onSubmit={inscrie}>
+                <select value={anNou} onChange={(e) => setAnNou(Number(e.target.value))}>
+                  <option value={0}>anul universitar curent</option>
+                  {ani.filter((a) => !a.curent).map((a) => (
+                    <option key={a.id} value={a.id}>{a.cod}</option>
+                  ))}
+                </select>
+                <select value={grupaNoua} onChange={(e) => setGrupaNoua(Number(e.target.value))} required>
+                  <option value={0} disabled>– grupa –</option>
+                  {grupe.map((g) => (
+                    <option key={g.id} value={g.id}>{g.cod}</option>
+                  ))}
+                </select>
+                <button type="submit" disabled={!grupaNoua || inscriere.isPending}>Înscrie</button>
+              </form>
+            )}
           </section>
         </>
       )}

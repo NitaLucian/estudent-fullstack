@@ -2,6 +2,7 @@ import {
   Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseIntPipe, Patch, Post, Query,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { Roluri } from '../auth/roluri.guard.js';
 import { Grupa } from './grupa.entity.js';
 import { CreateGrupaDto } from './dto/create-grupa.dto.js';
 import { UpdateGrupaDto } from './dto/update-grupa.dto.js';
@@ -24,16 +25,19 @@ export class GrupeController {
     return this.service.findOne(id);
   }
 
+  @Roluri('ADMIN')
   @Post()
   create(@Body() date: CreateGrupaDto): Promise<Grupa> {
     return this.service.create(date);
   }
 
+  @Roluri('ADMIN')
   @Patch(':id')
   update(@Param('id', ParseIntPipe) id: number, @Body() date: UpdateGrupaDto): Promise<Grupa> {
     return this.service.update(id, date);
   }
 
+  @Roluri('ADMIN')
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   remove(@Param('id', ParseIntPipe) id: number): Promise<void> {

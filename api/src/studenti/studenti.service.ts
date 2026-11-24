@@ -1,5 +1,6 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { AniUniversitariService } from '../ani/ani-universitari.service.js';
+import type { UtilizatorJwt } from '../auth/auth.decorators.js';
 import { Prisma } from '../generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { CreateStudentDto } from './dto/create-student.dto.js';
@@ -56,8 +57,37 @@ export class StudentiService {
     private readonly ani: AniUniversitariService,
   ) {}
 
-  async findAll(q: ListaStudentiDto) {
-    const where: Prisma.StudentWhereInput = {};
+  // Ce studenți are voie să vadă utilizatorul (autorizare la nivel de resursă):
+  //  ADMIN – toți; STUDENT – doar pe el însuși;
+  //  PROFESOR – studenții înscriși anul acesta în grupele unde predă (aceeași specializare și an).
+  async filtruAcces(u: UtilizatorJwt): Promise<Prisma.StudentWhereInput> {
+    if (u.rol === 'ADMIN') return {};
+    if (u.rol === 'STUDENT') return { id: u.studentId ?? -1 };
+    const predari = await this.prisma.predare.findMany({
+      where: { profesorId: u.profesorId ?? -1, anUniversitar: { curent: true } },
+      select: { disciplina: { select: { specializareId: true, anStudiuId: true } } },
+    });
+    if (predari.length === 0) return { id: -1 }; // nicio disciplină => niciun student
+    return {
+      inscrieri: {
+        some: {
+          anUniversitar: { curent: true },
+          grupa: { OR: predari.map((p) => ({ specializareId: p.disciplina.specializareId, anStudiuId: p.disciplina.anStudiuId })) },
+        },
+      },
+    };
+  }
+
+  // Fișa unui student, doar dacă utilizatorul are voie să o vadă.
+  async findOneVerificat(id: number, u: UtilizatorJwt) {
+    const student = await this.findOne(id); // 404 dacă nu există
+    const vizibil = await this.prisma.student.count({ where: { AND: [{ id }, await this.filtruAcces(u)] } });
+    if (!vizibil) throw new ForbiddenException('Nu aveți acces la datele acestui student');
+    return student;
+  }
+
+  async findAll(q: ListaStudentiDto, u: UtilizatorJwt) {
+    const where: Prisma.StudentWhereInput = { AND: [await this.filtruAcces(u)] };
     // filtrele după grupă și specializare privesc înscrierea din anul curent
     if (q.grupaId || q.specializareId) {
       where.inscrieri = {

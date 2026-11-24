@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { mesajeDin } from '../api/client'
 import { useGrupe, useSpecializari, useStudenti, type FiltreStudenti } from '../api/hooks'
+import { usePermisiuni } from '../auth/permisiuni'
 import MesajEroare from '../components/MesajEroare'
 import Paginare from '../components/Paginare'
 import Tabel, { type Coloana } from '../components/Tabel'
@@ -32,6 +33,7 @@ const coloane: Coloana<Student>[] = [
 ]
 
 export default function StudentiPage() {
+  const { esteAdmin, esteProfesor } = usePermisiuni()
   // Filtrele stau în adresa paginii (?cauta=...&pagina=2)
   const [params, setParams] = useSearchParams()
   const filtre: FiltreStudenti = {
@@ -59,8 +61,8 @@ export default function StudentiPage() {
   return (
     <>
       <div className="titlu-pagina">
-        <h1>Studenți {isFetching && <span className="nota">se actualizează…</span>}</h1>
-        <Link className="buton" to="/studenti/nou">+ Adaugă student</Link>
+        <h1>{esteProfesor ? 'Studenții mei' : 'Studenți'} {isFetching && <span className="nota">se actualizează…</span>}</h1>
+        {esteAdmin && <Link className="buton" to="/studenti/nou">+ Adaugă student</Link>}
       </div>
 
       <div className="bara-filtre">

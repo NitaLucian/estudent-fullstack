@@ -2,6 +2,7 @@ import {
   Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseIntPipe, Patch, Post,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { Roluri } from '../auth/roluri.guard.js';
 import { Specializare, SpecializareCuNumar } from './specializare.entity.js';
 import { CreateSpecializareDto } from './dto/create-specializare.dto.js';
 import { UpdateSpecializareDto } from './dto/update-specializare.dto.js';
@@ -29,16 +30,19 @@ export class SpecializariController {
   }
 
   // @Body() ia corpul JSON al cererii; ValidationPipe îl verifică după regulile din DTO
+  @Roluri('ADMIN')
   @Post()
   create(@Body() date: CreateSpecializareDto): Promise<Specializare> {
     return this.service.create(date);
   }
 
+  @Roluri('ADMIN')
   @Patch(':id')
   update(@Param('id', ParseIntPipe) id: number, @Body() date: UpdateSpecializareDto): Promise<Specializare> {
     return this.service.update(id, date);
   }
 
+  @Roluri('ADMIN')
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   remove(@Param('id', ParseIntPipe) id: number): Promise<void> {

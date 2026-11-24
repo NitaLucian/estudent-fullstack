@@ -1,14 +1,23 @@
 import { mesajeDin } from '../api/client'
+import { Link } from 'react-router'
 import { useStareServer } from '../api/hooks'
+import { useAuth } from '../auth/context'
 
 // Pagina de start: starea serverului și a bazei de date.
 export default function AcasaPage() {
   // useQuery ne dă direct: datele, eroarea, starea de încărcare și o funcție de reîncărcare
   const { data: stare, error, isFetching, refetch } = useStareServer()
+  const { utilizator } = useAuth()
 
   return (
     <>
-      <h1>Bine ați venit!</h1>
+      <h1>Bine ați venit, {utilizator?.nume}!</h1>
+      {utilizator?.rol === 'STUDENT' && (
+        <p><Link className="buton" to={`/studenti/${utilizator.studentId}`}>Fișa mea</Link></p>
+      )}
+      {utilizator?.rol === 'PROFESOR' && (
+        <p><Link className="buton" to={`/profesori/${utilizator.profesorId}`}>Disciplinele mele</Link></p>
+      )}
       <p>
         Aplicația este formată din două programe care comunică prin HTTP: frontendul
         (React, în browser) și backendul (NestJS, pe server). Backendul păstrează datele

@@ -2,6 +2,7 @@ import {
   Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseIntPipe, Patch, Post,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { Roluri } from '../auth/roluri.guard.js';
 import { Predare, Profesor, ProfesorCuNumar, ProfesorDetaliu } from './profesor.entity.js';
 import { CreatePredareDto, CreateProfesorDto, UpdateProfesorDto } from './dto/profesor.dto.js';
 import { ProfesoriService } from './profesori.service.js';
@@ -22,27 +23,32 @@ export class ProfesoriController {
     return this.service.findOne(id);
   }
 
+  @Roluri('ADMIN')
   @Post()
   create(@Body() date: CreateProfesorDto): Promise<Profesor> {
     return this.service.create(date);
   }
 
+  @Roluri('ADMIN')
   @Patch(':id')
   update(@Param('id', ParseIntPipe) id: number, @Body() date: UpdateProfesorDto): Promise<Profesor> {
     return this.service.update(id, date);
   }
 
+  @Roluri('ADMIN')
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
     return this.service.remove(id);
   }
 
+  @Roluri('ADMIN')
   @Post(':id/predari')
   adaugaPredare(@Param('id', ParseIntPipe) id: number, @Body() date: CreatePredareDto): Promise<Predare> {
     return this.service.adaugaPredare(id, date);
   }
 
+  @Roluri('ADMIN')
   @Delete(':id/predari/:predareId')
   @HttpCode(HttpStatus.NO_CONTENT)
   stergePredare(@Param('id', ParseIntPipe) id: number, @Param('predareId', ParseIntPipe) predareId: number): Promise<void> {

@@ -5,6 +5,7 @@ import { JwtModule, type JwtModuleOptions } from '@nestjs/jwt';
 import { AuthController } from './auth.controller.js';
 import { AuthGuard } from './auth.guard.js';
 import { AuthService } from './auth.service.js';
+import { RoluriGuard } from './roluri.guard.js';
 
 @Module({
   imports: [
@@ -22,6 +23,8 @@ import { AuthService } from './auth.service.js';
     AuthService,
     // APP_GUARD: AuthGuard se aplică tuturor rutelor din aplicație
     { provide: APP_GUARD, useClass: AuthGuard },
+    // al doilea guard global: rolurile (rulează după AuthGuard, în ordinea înregistrării)
+    { provide: APP_GUARD, useClass: RoluriGuard },
   ],
 })
 export class AuthModule {}

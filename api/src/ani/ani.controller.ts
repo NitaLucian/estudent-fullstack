@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Param, ParseIntPipe, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { Roluri } from '../auth/roluri.guard.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { AnStudiu, AnUniversitar, AnUniversitarCuNumar } from './ani.entity.js';
 import { AniUniversitariService } from './ani-universitari.service.js';
@@ -21,12 +22,14 @@ export class AniUniversitariController {
     return this.service.curent();
   }
 
+  @Roluri('ADMIN')
   @Post()
   create(@Body() date: CreateAnUniversitarDto): Promise<AnUniversitar> {
     return this.service.create(date);
   }
 
   // POST /api/ani-universitari/3/curent – anul 3 devine anul curent
+  @Roluri('ADMIN')
   @Post(':id/curent')
   stabilesteCurent(@Param('id', ParseIntPipe) id: number): Promise<AnUniversitar> {
     return this.service.stabilesteCurent(id);

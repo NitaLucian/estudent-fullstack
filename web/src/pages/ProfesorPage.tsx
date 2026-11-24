@@ -4,6 +4,7 @@ import { mesajeDin } from '../api/client'
 import {
   useAdaugaPredare, useDiscipline, useProfesor, useSalveazaProfesor, useStergePredare, useStergeProfesor,
 } from '../api/hooks'
+import { usePermisiuni } from '../auth/permisiuni'
 import MesajEroare from '../components/MesajEroare'
 import ProfesorForm from '../components/ProfesorForm'
 import { GRADE } from '../format'
@@ -21,6 +22,7 @@ export default function ProfesorPage() {
   const stergerePredare = useStergePredare(id)
   const [disciplinaNoua, setDisciplinaNoua] = useState(0)
   const [editare, setEditare] = useState(false)
+  const { esteAdmin } = usePermisiuni()
 
   async function salveaza(date: ProfesorDate) {
     await salvare.mutateAsync({ id, corp: date })
@@ -45,7 +47,7 @@ export default function ProfesorPage() {
 
   return (
     <>
-      <p><Link to="/profesori">‹ Toți profesorii</Link></p>
+      {esteAdmin && <p><Link to="/profesori">‹ Toți profesorii</Link></p>}
       <MesajEroare mesaje={erori} />
       {editare ? (
         <ProfesorForm titlu="Modificarea datelor" initial={profesor} onSalveaza={salveaza} onRenunta={() => setEditare(false)} />
@@ -53,10 +55,12 @@ export default function ProfesorPage() {
         <section className="card">
           <div className="titlu-pagina">
             <h1>{profesor.nume} {profesor.prenume}</h1>
-            <div className="butoane">
-              <button className="secundar" onClick={() => setEditare(true)}>Modifică</button>
-              <button className="pericol" onClick={stergeProfesorul}>Șterge</button>
-            </div>
+            {esteAdmin && (
+              <div className="butoane">
+                <button className="secundar" onClick={() => setEditare(true)}>Modifică</button>
+                <button className="pericol" onClick={stergeProfesorul}>Șterge</button>
+              </div>
+            )}
           </div>
           <dl className="detalii">
             <dt>Grad didactic</dt>
@@ -83,7 +87,7 @@ export default function ProfesorPage() {
                 <td className="numar">{p.disciplina.anStudiu.numar}</td>
                 <td className="numar">{p.disciplina.semestru}</td>
                 <td className="actiuni">
-                  {p.anUniversitar.curent && (
+                  {esteAdmin && p.anUniversitar.curent && (
                     <button className="mic pericol" onClick={() => stergerePredare.mutate(p.id)}>Renunță</button>
                   )}
                 </td>
@@ -91,15 +95,17 @@ export default function ProfesorPage() {
             ))}
           </tbody>
         </table>
-        <form className="bara-filtre" style={{ marginTop: '0.75rem' }} onSubmit={(ev) => adaugaDisciplina(ev).catch(() => {})}>
-          <select value={disciplinaNoua} onChange={(e) => setDisciplinaNoua(Number(e.target.value))} required>
-            <option value={0} disabled>– disciplina –</option>
-            {discipline.map((d) => (
-              <option key={d.id} value={d.id}>{d.cod} – {d.denumire}</option>
-            ))}
-          </select>
-          <button type="submit" disabled={!disciplinaNoua || adaugarePredare.isPending}>Adaugă în anul curent</button>
-        </form>
+        {esteAdmin && (
+          <form className="bara-filtre" style={{ marginTop: '0.75rem' }} onSubmit={(ev) => adaugaDisciplina(ev).catch(() => {})}>
+            <select value={disciplinaNoua} onChange={(e) => setDisciplinaNoua(Number(e.target.value))} required>
+              <option value={0} disabled>– disciplina –</option>
+              {discipline.map((d) => (
+                <option key={d.id} value={d.id}>{d.cod} – {d.denumire}</option>
+              ))}
+            </select>
+            <button type="submit" disabled={!disciplinaNoua || adaugarePredare.isPending}>Adaugă în anul curent</button>
+          </form>
+        )}
       </section>
     </>
   )

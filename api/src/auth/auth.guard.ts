@@ -28,8 +28,20 @@ export class AuthGuard implements CanActivate {
 
     try {
       // verifică semnătura și data expirării; un token modificat sau expirat este respins
-      const continut = await this.jwt.verifyAsync<{ sub: number; email: string; rol: UtilizatorJwt['rol'] }>(token);
-      cerere.utilizator = { id: continut.sub, email: continut.email, rol: continut.rol };
+      const continut = await this.jwt.verifyAsync<{
+        sub: number;
+        email: string;
+        rol: UtilizatorJwt['rol'];
+        sid: number | null;
+        pid: number | null;
+      }>(token);
+      cerere.utilizator = {
+        id: continut.sub,
+        email: continut.email,
+        rol: continut.rol,
+        studentId: continut.sid,
+        profesorId: continut.pid,
+      };
       return true;
     } catch {
       throw new UnauthorizedException('Token invalid sau expirat');

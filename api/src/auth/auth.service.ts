@@ -96,7 +96,14 @@ export class AuthService implements OnModuleInit {
 
   // un token de acces (JWT, ~15 minute) + un refresh token (aleator, ~7 zile)
   private async sesiuneNoua(u: UtilizatorCuNume): Promise<Sesiune> {
-    const accessToken = await this.jwt.signAsync({ sub: u.id, email: u.email, rol: u.rol });
+    // conținutul token-ului este SEMNAT, nu criptat: oricine îl poate citi (nu punem secrete în el)
+    const accessToken = await this.jwt.signAsync({
+      sub: u.id,
+      email: u.email,
+      rol: u.rol,
+      sid: u.studentId,
+      pid: u.profesorId,
+    });
     const refreshToken = randomBytes(32).toString('base64url');
     const zile = this.config.get<number>('REFRESH_ZILE') ?? 7;
     await this.prisma.sesiuneRefresh.create({

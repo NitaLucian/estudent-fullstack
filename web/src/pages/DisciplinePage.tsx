@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router'
 import { mesajeDin } from '../api/client'
 import { useAniStudiu, useDiscipline, useSalveazaDisciplina, useSpecializari, useStergeDisciplina } from '../api/hooks'
 import DisciplinaForm from '../components/DisciplinaForm'
+import { usePermisiuni } from '../auth/permisiuni'
 import MesajEroare from '../components/MesajEroare'
 import Tabel, { type Coloana } from '../components/Tabel'
 import type { Disciplina, DisciplinaDate } from '../tipuri'
@@ -26,6 +27,7 @@ export default function DisciplinePage() {
   const salvare = useSalveazaDisciplina()
   const stergere = useStergeDisciplina()
   const [formular, setFormular] = useState<StareFormular>({ mod: 'ascuns' })
+  const { esteAdmin } = usePermisiuni()
 
   function filtru(nume: string, valoare: string) {
     const noi = new URLSearchParams(params)
@@ -39,7 +41,7 @@ export default function DisciplinePage() {
     setFormular({ mod: 'ascuns' })
   }
 
-  const coloane: Coloana<Disciplina>[] = [
+  const toateColoanele: Coloana<Disciplina>[] = [
     { titlu: 'Cod', celula: (d) => d.cod },
     { titlu: 'Denumire', celula: (d) => d.denumire },
     { titlu: 'Spec.', celula: (d) => d.specializare.cod },
@@ -70,6 +72,9 @@ export default function DisciplinePage() {
     },
   ]
 
+  // coloana „Acțiuni” doar pentru administrator
+  const coloane = esteAdmin ? toateColoanele : toateColoanele.filter((c) => c.titlu !== 'Acțiuni')
+
   const initialNou: DisciplinaDate = {
     cod: '', denumire: '', credite: 5, semestru: filtre.semestru ?? 1,
     specializareId: filtre.specializareId ?? 0, anStudiuId: filtre.anStudiuId ?? 0,
@@ -78,8 +83,8 @@ export default function DisciplinePage() {
   return (
     <>
       <div className="titlu-pagina">
-        <h1>Discipline</h1>
-        {formular.mod === 'ascuns' && <button onClick={() => setFormular({ mod: 'adaugare' })}>+ Adaugă disciplină</button>}
+        <h1>{esteAdmin ? 'Discipline' : 'Plan de învățământ'}</h1>
+        {esteAdmin && formular.mod === 'ascuns' && <button onClick={() => setFormular({ mod: 'adaugare' })}>+ Adaugă disciplină</button>}
       </div>
       <div className="bara-filtre">
         <select value={params.get('specializareId') ?? ''} onChange={(e) => filtru('specializareId', e.target.value)}>

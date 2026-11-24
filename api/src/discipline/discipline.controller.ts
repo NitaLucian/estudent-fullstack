@@ -2,6 +2,7 @@ import {
   Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseIntPipe, Patch, Post, Query,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { Roluri } from '../auth/roluri.guard.js';
 import { Disciplina } from './disciplina.entity.js';
 import { DisciplineService } from './discipline.service.js';
 import { CreateDisciplinaDto, ListaDisciplineDto, UpdateDisciplinaDto } from './dto/disciplina.dto.js';
@@ -22,16 +23,19 @@ export class DisciplineController {
     return this.service.findOne(id);
   }
 
+  @Roluri('ADMIN')
   @Post()
   create(@Body() date: CreateDisciplinaDto): Promise<Disciplina> {
     return this.service.create(date);
   }
 
+  @Roluri('ADMIN')
   @Patch(':id')
   update(@Param('id', ParseIntPipe) id: number, @Body() date: UpdateDisciplinaDto): Promise<Disciplina> {
     return this.service.update(id, date);
   }
 
+  @Roluri('ADMIN')
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   remove(@Param('id', ParseIntPipe) id: number): Promise<void> {

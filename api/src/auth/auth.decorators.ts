@@ -7,6 +7,8 @@ export interface UtilizatorJwt {
   id: number;
   email: string;
   rol: Rol;
+  studentId: number | null; // pentru rolul STUDENT
+  profesorId: number | null; // pentru rolul PROFESOR
 }
 
 // Cererea HTTP, completată de AuthGuard cu utilizatorul autentificat

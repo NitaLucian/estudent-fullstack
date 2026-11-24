@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { mesajeDin } from '../api/client'
 import { useAniStudiu, useGrupe, useSalveazaGrupa, useSpecializari, useStergeGrupa } from '../api/hooks'
 import GrupaForm from '../components/GrupaForm'
+import { usePermisiuni } from '../auth/permisiuni'
 import MesajEroare from '../components/MesajEroare'
 import type { Grupa, GrupaDate } from '../tipuri'
 
@@ -16,6 +17,7 @@ export default function GrupePage() {
   const salvare = useSalveazaGrupa()
   const stergere = useStergeGrupa()
   const [formular, setFormular] = useState<StareFormular>({ mod: 'ascuns' })
+  const { esteAdmin } = usePermisiuni()
 
   async function salveaza(date: GrupaDate) {
     await salvare.mutateAsync({ id: formular.mod === 'modificare' ? formular.grupa.id : undefined, corp: date })
@@ -32,7 +34,7 @@ export default function GrupePage() {
     <>
       <div className="titlu-pagina">
         <h1>Grupe</h1>
-        {formular.mod === 'ascuns' && <button onClick={() => setFormular({ mod: 'adaugare' })}>+ Adaugă grupă</button>}
+        {esteAdmin && formular.mod === 'ascuns' && <button onClick={() => setFormular({ mod: 'adaugare' })}>+ Adaugă grupă</button>}
       </div>
 
       <div className="bara-filtre">
@@ -67,7 +69,7 @@ export default function GrupePage() {
             <th>Cod</th>
             <th>Specializare</th>
             <th className="numar">An</th>
-            <th className="actiuni">Acțiuni</th>
+            {esteAdmin && <th className="actiuni">Acțiuni</th>}
           </tr>
         </thead>
         <tbody>
@@ -76,12 +78,14 @@ export default function GrupePage() {
               <td><strong>{g.cod}</strong></td>
               <td>{g.specializare.cod} – {g.specializare.denumire}</td>
               <td className="numar">{g.anStudiu.numar}</td>
-              <td className="actiuni">
-                <button className="mic secundar" onClick={() => setFormular({ mod: 'modificare', grupa: g })}>
-                  Modifică
-                </button>
-                <button className="mic pericol" onClick={() => stergeGrupa(g)}>Șterge</button>
-              </td>
+              {esteAdmin && (
+                <td className="actiuni">
+                  <button className="mic secundar" onClick={() => setFormular({ mod: 'modificare', grupa: g })}>
+                    Modifică
+                  </button>
+                  <button className="mic pericol" onClick={() => stergeGrupa(g)}>Șterge</button>
+                </td>
+              )}
             </tr>
           ))}
         </tbody>

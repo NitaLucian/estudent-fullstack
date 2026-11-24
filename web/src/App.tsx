@@ -1,4 +1,5 @@
 import { Route, Routes } from 'react-router'
+import RutaPentruRoluri from './auth/RutaPentruRoluri'
 import RutaProtejata from './auth/RutaProtejata'
 import Layout from './components/Layout'
 import AcasaPage from './pages/AcasaPage'
@@ -14,26 +15,35 @@ import StudentFormPage from './pages/StudentFormPage'
 import StudentiPage from './pages/StudentiPage'
 import StudentPage from './pages/StudentPage'
 
-// Harta aplicației: fiecare adresă are pagina ei.
-// Pagina de login este publică; toate celelalte cer autentificare (RutaProtejata)
-// și sunt desenate în interiorul componentei Layout (bara de sus + conținut).
+// Harta aplicației. Pagina de login este publică; restul cer autentificare (RutaProtejata),
+// iar unele pagini cer și un anumit rol (RutaPentruRoluri).
 export default function App() {
   return (
     <Routes>
       <Route path="login" element={<LoginPage />} />
       <Route element={<RutaProtejata />}>
         <Route element={<Layout />}>
+          {/* orice utilizator autentificat */}
           <Route index element={<AcasaPage />} />
-          <Route path="specializari" element={<SpecializariPage />} />
-          <Route path="grupe" element={<GrupePage />} />
-          <Route path="studenti" element={<StudentiPage />} />
-          <Route path="studenti/nou" element={<StudentFormPage />} />
-          <Route path="studenti/:id" element={<StudentPage />} />
-          <Route path="studenti/:id/editare" element={<StudentFormPage />} />
           <Route path="discipline" element={<DisciplinePage />} />
-          <Route path="profesori" element={<ProfesoriPage />} />
+          <Route path="studenti/:id" element={<StudentPage />} />
           <Route path="profesori/:id" element={<ProfesorPage />} />
-          <Route path="ani-universitari" element={<AniUniversitariPage />} />
+
+          {/* administrator și profesor */}
+          <Route element={<RutaPentruRoluri roluri={['ADMIN', 'PROFESOR']} />}>
+            <Route path="studenti" element={<StudentiPage />} />
+            <Route path="grupe" element={<GrupePage />} />
+          </Route>
+
+          {/* doar administrator */}
+          <Route element={<RutaPentruRoluri roluri={['ADMIN']} />}>
+            <Route path="specializari" element={<SpecializariPage />} />
+            <Route path="studenti/nou" element={<StudentFormPage />} />
+            <Route path="studenti/:id/editare" element={<StudentFormPage />} />
+            <Route path="profesori" element={<ProfesoriPage />} />
+            <Route path="ani-universitari" element={<AniUniversitariPage />} />
+          </Route>
+
           <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Route>
