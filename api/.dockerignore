@@ -1,0 +1,10 @@
+# Ce NU se copiază în imagine (COPY . .): dependențele și compilarea locală se refac
+# în container, iar secretele din .env nu au ce căuta într-o imagine.
+node_modules
+dist
+src/generated
+*.tsbuildinfo
+.env
+*.local
+*.log
+coverage

@@ -1,0 +1,39 @@
+# Descrierea serviciului de backend pentru Render („infrastructură ca cod”).
+# În Render: New > Blueprint > alegeți depozitul GitHub; Render citește acest fișier,
+# creează serviciul și cere valorile marcate cu „sync: false” (secretele).
+services:
+  - type: web
+    name: estudent-api
+    runtime: docker
+    rootDir: api # aici sunt Dockerfile-ul și codul backendului
+    plan: free
+    region: frankfurt
+    healthCheckPath: /api/health
+    autoDeployTrigger: checksPass # publică automat doar după ce trec verificările din CI
+    envVars:
+      - key: DATABASE_URL # Neon: Connection string (cu ?sslmode=require)
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true # Render generează o valoare aleatoare
+      - key: COOKIE_SECURE
+        value: "true"
+      - key: TRUST_PROXY # câte proxy-uri sunt în fața serverului: Cloudflare + Render
+        value: "2"
+      - key: APP_URL # adresa frontendului (Cloudflare Pages), folosită în emailuri
+        sync: false
+      - key: S3_ENDPOINT # Cloudflare R2: https://<id-cont>.r2.cloudflarestorage.com
+        sync: false
+      - key: S3_REGION
+        value: auto
+      - key: S3_BUCKET
+        value: estudent
+      - key: S3_ACCESS_KEY
+        sync: false
+      - key: S3_SECRET_KEY
+        sync: false
+      - key: EMAIL_FURNIZOR
+        value: brevo
+      - key: EMAIL_EXPEDITOR # adresa trebuie verificată în contul Brevo
+        sync: false
+      - key: BREVO_API_KEY
+        sync: false

@@ -1,0 +1,2 @@
+# Model pentru web/.dev.vars (variabilele funcției Cloudflare la rularea locală cu wrangler)
+API_URL=http://localhost:3102

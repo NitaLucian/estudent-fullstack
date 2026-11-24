@@ -1,0 +1,12 @@
+# Antetele HTTP ale fișierelor statice servite de Cloudflare Pages (echivalentul helmet
+# pentru frontend). Imaginile pot veni și din stocarea S3 (URL-uri presemnate, https:).
+/*
+  Content-Security-Policy: default-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+
+# fișierele din /assets au în nume o amprentă a conținutului (index-B3k9x.js):
+# se pot păstra în cache un an, pentru că o versiune nouă are alt nume
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable

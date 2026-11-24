@@ -33,7 +33,7 @@ Frontend (al doilea terminal):
 - profesori: adresele din pagina Profesori (de ex. `mihaela.andrei@estudent.ro`)
 - studenți: adresele din pagina Studenți (de ex. `ioana.tudor@student.estudent.ro`)
 
-Toate au aceeași parolă de test, `PAROLA_DEMO` din `api/prisma/seed.ts`. Doar pentru dezvoltare.
+Toate au aceeași parolă de test, `PAROLA_DEMO` din `api/prisma/date-seed.ts`. Doar pentru dezvoltare.
 
 ## După modificarea modelului (api/prisma/schema.prisma)
 
@@ -55,3 +55,21 @@ Cu backendul pornit, regenerați tipurile frontendului:
     npm run test:e2e      # testele e2e: aplicația întreagă, pe baza separată estudent_teste
 
 La fiecare push, GitHub Actions rulează aceleași verificări (`.github/workflows/ci.yml`).
+
+## Publicare (deploy)
+
+| Componentă | Serviciu (plan gratuit) | Ce primește |
+|---|---|---|
+| Frontend + proxy `/api` | Cloudflare Pages | `web/dist` și funcția `web/functions/api/[[cale]].ts` |
+| Backend | Render (Docker) | imaginea construită din `api/Dockerfile` (`render.yaml`) |
+| Baza de date | Neon (PostgreSQL) | migrațiile, aplicate automat la pornirea backendului |
+| Fișiere | Cloudflare R2 (S3) | bucket-ul `estudent` |
+| Email | Brevo (API HTTP) | cheia API și un expeditor verificat |
+
+Repetiția locală a producției (Docker + wrangler):
+
+    docker build -t estudent-api:1.0.0 ./api
+    docker run -d --name estudent-api -p 3102:3000 --env-file api/.env.productie.local estudent-api:1.0.0
+    cd web
+    cp .dev.vars.example .dev.vars
+    npm run cloudflare        # http://localhost:8788

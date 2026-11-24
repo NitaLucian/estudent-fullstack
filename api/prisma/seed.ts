@@ -179,7 +179,7 @@ async function seedUtilizatori() {
     // la rularea repetată nu schimbăm parola unui cont existent
     await prisma.utilizator.upsert({ where: { email: c.email }, update: {}, create: { ...c, parolaHash } });
   }
-  console.log(`Seed: ${conturi.length} conturi (parola de test: vezi PAROLA_DEMO în seed.ts).`);
+  console.log(`Seed: ${conturi.length} conturi (parola de test: vezi PAROLA_DEMO în date-seed.ts).`);
 }
 
 // Notele din anul universitar trecut (anTrecut): fiecare student are o notă la fiecare

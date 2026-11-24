@@ -6,6 +6,9 @@ dist/
 # fișiere cu secrete și setări locale: NU intră în Git
 .env
 *.local
+.dev.vars
+# fișierele de lucru ale wrangler (Cloudflare)
+.wrangler/
 # fișiere ale sistemului de operare / editorului
 .DS_Store
 .idea/

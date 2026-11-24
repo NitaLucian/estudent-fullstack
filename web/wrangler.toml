@@ -1,0 +1,11 @@
+# Configurarea proiectului Cloudflare Pages (folosită de wrangler, local și la publicare).
+name = "estudent"
+# directorul cu fișierele statice produse de „npm run build”
+pages_build_output_dir = "./dist"
+# versiunea comportamentului platformei Workers pe care ne bazăm
+compatibility_date = "2026-11-01"
+
+# Variabilele de mediu ale funcției din functions/api/[[cale]].ts.
+# Adresa backendului nu este un secret. Local se suprascrie din fișierul .dev.vars.
+[vars]
+API_URL = "https://estudent-api.onrender.com"

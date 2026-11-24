@@ -49,8 +49,9 @@ import { StudentiModule } from './studenti/studenti.module.js';
   providers: [],
 })
 export class AppModule implements NestModule {
-  // middleware-ul de jurnal se aplică tuturor rutelor
+  // middleware-ul de jurnal se aplică tuturor rutelor. „{*cale}” = orice cale, inclusiv
+  // niciun segment (sintaxa nouă din Express 5; vechiul „*” produce un avertisment)
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(JurnalCereriMiddleware).forRoutes('*');
+    consumer.apply(JurnalCereriMiddleware).forRoutes('{*cale}');
   }
 }

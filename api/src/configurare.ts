@@ -11,10 +11,12 @@ export function configureazaAplicatia(app: NestExpressApplication) {
   // ghicirea tipului de conținut, scurgerea adresei în Referer etc.
   app.use(helmet());
 
-  // În spatele unui proxy (Vite în dezvoltare, platforma de găzduire în producție),
+  // În spatele unor proxy-uri (Cloudflare și platforma de găzduire, în producție),
   // adresa IP reală a clientului vine în antetul X-Forwarded-For. Limitarea cererilor
-  // pe IP are nevoie de ea; TRUST_PROXY spune câte proxy-uri de încredere sunt în față.
-  app.set('trust proxy', Number(process.env.TRUST_PROXY ?? 1));
+  // pe IP are nevoie de ea; TRUST_PROXY spune CÂTE proxy-uri de încredere sunt în față.
+  // Implicit 0: antetul este ignorat. Altfel, oricine apelează serverul direct ar putea
+  // pretinde, cu un X-Forwarded-For inventat, că vine de la altă adresă la fiecare cerere.
+  app.set('trust proxy', Number(process.env.TRUST_PROXY ?? 0));
 
   app.setGlobalPrefix('api');
   app.use(cookieParser());
