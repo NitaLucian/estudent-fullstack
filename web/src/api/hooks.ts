@@ -313,3 +313,31 @@ export function useSituatie(studentId: number) {
     queryFn: () => date(client.GET('/api/note/student/{studentId}', { params: { path: { studentId } } })),
   })
 }
+
+// ---------- rapoarte ----------
+export interface FiltreRaport {
+  anUniversitarId?: number
+  specializareId?: number
+  anStudiuId?: number
+}
+
+export function useDistributieNote(filtre: FiltreRaport) {
+  return useQuery({
+    queryKey: ['rapoarte', 'distributie', filtre],
+    queryFn: () => date(client.GET('/api/rapoarte/distributie-note', { params: { query: filtre } })),
+  })
+}
+
+export function usePromovabilitate(filtre: FiltreRaport) {
+  return useQuery({
+    queryKey: ['rapoarte', 'promovabilitate', filtre],
+    queryFn: () => date(client.GET('/api/rapoarte/promovabilitate', { params: { query: filtre } })),
+  })
+}
+
+export function useClasament(filtre: FiltreRaport) {
+  return useQuery({
+    queryKey: ['rapoarte', 'clasament', filtre],
+    queryFn: () => date(client.GET('/api/rapoarte/clasament', { params: { query: filtre } })),
+  })
+}

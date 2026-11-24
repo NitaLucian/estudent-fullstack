@@ -141,3 +141,8 @@ button:disabled { opacity: 0.6; cursor: default; }
 .cifre { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.75rem; }
 .cifre div { background: #eef2f7; border-radius: 8px; padding: 0.75rem; color: var(--text-slab); }
 .cifre strong { display: block; font-size: 1.8rem; color: var(--albastru); }
+
+/* bara de procent din tabelul de promovabilitate */
+.bara-procent { position: relative; background: #eef2f7; border-radius: 4px; height: 1.3rem; min-width: 8rem; }
+.bara-procent div { height: 100%; background: #9fc5e8; border-radius: 4px; }
+.bara-procent span { position: absolute; inset: 0; text-align: center; font-size: 0.85rem; line-height: 1.3rem; }

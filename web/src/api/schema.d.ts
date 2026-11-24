@@ -420,6 +420,70 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/rapoarte/distributie-note": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["RapoarteController_distributie"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/rapoarte/promovabilitate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["RapoarteController_promovabilitate"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/rapoarte/clasament": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["RapoarteController_clasament"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/rapoarte/grupe.csv": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["RapoarteController_grupeCsv"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -806,6 +870,38 @@ export interface components {
             student: components["schemas"]["StudentCatalog"];
             note: components["schemas"]["NotaStudent"][];
             medii: components["schemas"]["MedieAn"][];
+        };
+        NumarNote: {
+            /** @description Nota (1–10) */
+            valoare: number;
+            /** @description Câți studenți au primit această notă */
+            numar: number;
+        };
+        PromovabilitateDisciplina: {
+            disciplinaId: number;
+            cod: string;
+            denumire: string;
+            numarNote: number;
+            medie: number;
+            promovati: number;
+            /** @description Procentul notelor de cel puțin 5 */
+            procent: number;
+        };
+        LocClasament: {
+            /** @description Locul în clasamentul specializării și anului (RANK) */
+            loc: number;
+            studentId: number;
+            nrMatricol: string;
+            nume: string;
+            prenume: string;
+            grupa: string;
+            specializare: string;
+            an: number;
+            numarNote: number;
+            medieAritmetica: number | null;
+            mediePonderata: number | null;
+            crediteObtinute: number;
+            restante: number;
         };
     };
     responses: never;
@@ -1758,6 +1854,98 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SituatieScolara"];
+                };
+            };
+        };
+    };
+    RapoarteController_distributie: {
+        parameters: {
+            query?: {
+                anUniversitarId?: number;
+                specializareId?: number;
+                anStudiuId?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NumarNote"][];
+                };
+            };
+        };
+    };
+    RapoarteController_promovabilitate: {
+        parameters: {
+            query?: {
+                anUniversitarId?: number;
+                specializareId?: number;
+                anStudiuId?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PromovabilitateDisciplina"][];
+                };
+            };
+        };
+    };
+    RapoarteController_clasament: {
+        parameters: {
+            query?: {
+                anUniversitarId?: number;
+                specializareId?: number;
+                anStudiuId?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LocClasament"][];
+                };
+            };
+        };
+    };
+    RapoarteController_grupeCsv: {
+        parameters: {
+            query?: {
+                anUniversitarId?: number;
+                specializareId?: number;
+                anStudiuId?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/csv": string;
                 };
             };
         };

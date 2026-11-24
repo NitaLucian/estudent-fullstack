@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react'
 import { Route, Routes } from 'react-router'
 import RutaPentruRoluri from './auth/RutaPentruRoluri'
 import RutaProtejata from './auth/RutaProtejata'
@@ -16,6 +17,10 @@ import SpecializariPage from './pages/SpecializariPage'
 import StudentFormPage from './pages/StudentFormPage'
 import StudentiPage from './pages/StudentiPage'
 import StudentPage from './pages/StudentPage'
+
+// Pagina de rapoarte (cu biblioteca de grafice, mare) se încarcă abia când este deschisă:
+// Vite o pune într-un fișier JavaScript separat („code splitting”).
+const RapoartePage = lazy(() => import('./pages/RapoartePage'))
 
 // Harta aplicației. Pagina de login este publică; restul cer autentificare (RutaProtejata),
 // iar unele pagini cer și un anumit rol (RutaPentruRoluri).
@@ -46,6 +51,14 @@ export default function App() {
             <Route path="studenti/:id/editare" element={<StudentFormPage />} />
             <Route path="profesori" element={<ProfesoriPage />} />
             <Route path="ani-universitari" element={<AniUniversitariPage />} />
+            <Route
+              path="rapoarte"
+              element={
+                <Suspense fallback={<p>Se încarcă rapoartele…</p>}>
+                  <RapoartePage />
+                </Suspense>
+              }
+            />
           </Route>
 
           <Route path="*" element={<NotFoundPage />} />

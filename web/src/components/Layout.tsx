@@ -17,6 +17,7 @@ function meniuPentru(u: UtilizatorAutentificat): { adresa: string; eticheta: str
         { adresa: '/discipline', eticheta: 'Discipline' },
         { adresa: '/profesori', eticheta: 'Profesori' },
         { adresa: '/ani-universitari', eticheta: 'Ani universitari' },
+        { adresa: '/rapoarte', eticheta: 'Rapoarte' },
       ]
     case 'PROFESOR':
       return [
