@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
 import { HealthController } from './health/health.controller.js';
+import { PrismaModule } from './prisma/prisma.module.js';
+import { SpecializariModule } from './specializari/specializari.module.js';
 
 // Modulul rădăcină: lista tuturor componentelor aplicației.
-// Pe măsură ce aplicația crește, aici vom importa modulele noi.
 @Module({
-  imports: [],
+  imports: [PrismaModule, SpecializariModule],
   controllers: [HealthController],
   providers: [],
 })

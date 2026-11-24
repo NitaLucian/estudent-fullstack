@@ -1,3 +1,4 @@
+import 'dotenv/config'; // primul import: încarcă variabilele din .env (DATABASE_URL, PORT)
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module.js';
 

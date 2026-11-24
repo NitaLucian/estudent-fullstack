@@ -52,3 +52,17 @@ button {
   border: 1px solid var(--albastru); background: var(--albastru); color: #fff;
 }
 button:hover { background: var(--albastru-deschis); }
+
+/* meniul din bara de sus */
+.meniu { display: flex; gap: 0.25rem; margin-left: 1rem; }
+.meniu button { background: transparent; border-color: transparent; color: #fff; opacity: 0.85; }
+.meniu button:hover { background: rgba(255, 255, 255, 0.12); opacity: 1; }
+.meniu button.activ { background: rgba(255, 255, 255, 0.2); opacity: 1; font-weight: 600; }
+
+/* tabele de date */
+.tabel { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid var(--chenar); }
+.tabel th, .tabel td { padding: 0.5rem 0.75rem; text-align: left; border-bottom: 1px solid var(--chenar); }
+.tabel th { background: #eef2f7; color: var(--albastru); font-weight: 600; }
+.tabel tbody tr:hover { background: #f6f8fa; }
+
+.nota { color: var(--text-slab); font-size: 0.9rem; }

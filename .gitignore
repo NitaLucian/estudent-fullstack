@@ -10,3 +10,5 @@ dist/
 .DS_Store
 .idea/
 *.log
+# codul generat de Prisma (se reface cu npx prisma generate)
+api/src/generated/

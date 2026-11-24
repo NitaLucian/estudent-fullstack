@@ -1,0 +1,22 @@
+// Modelul de date al aplicației eStudent.
+// Din acest fișier Prisma generează: (1) migrările SQL, (2) clientul TypeScript.
+
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated/prisma"
+  moduleFormat        = "esm"
+  importFileExtension = "js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// O specializare (program de studii), de exemplu „Calculatoare”.
+model Specializare {
+  id       Int    @id @default(autoincrement())
+  cod      String @unique @db.VarChar(15)
+  denumire String @db.VarChar(100)
+
+  @@map("specializari") // numele tabelului în PostgreSQL
+}

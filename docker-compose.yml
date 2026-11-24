@@ -1,0 +1,18 @@
+# Serviciile de infrastructură ale aplicației, pornite cu: docker compose up -d
+services:
+  db:
+    image: postgres:18
+    container_name: estudent-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: estudent
+      POSTGRES_USER: estudent
+      POSTGRES_PASSWORD: estudent_dev   # parolă doar pentru dezvoltare locală
+      TZ: Europe/Bucharest
+    ports:
+      - "5433:5432"   # portul 5433 al calculatorului -> portul 5432 din container
+    volumes:
+      - estudent-pgdata:/var/lib/postgresql   # datele rămân după oprirea containerului
+
+volumes:
+  estudent-pgdata:
