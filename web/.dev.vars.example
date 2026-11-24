@@ -1,2 +1,3 @@
 # Model pentru web/.dev.vars (variabilele funcției Cloudflare la rularea locală cu wrangler)
 API_URL=http://localhost:3102
+PROXY_SECRET=acelasi-secret-ca-in-api-env-productie-local-min-32

@@ -3,6 +3,7 @@ import type { NestExpressApplication } from '@nestjs/platform-express';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import { PrismaExceptionFilter } from './common/prisma-exception.filter.js';
+import { doarPrinProxy } from './securitate/proxy.js';
 
 // Configurarea comună a aplicației, folosită de main.ts ȘI de testele e2e:
 // testele verifică exact aplicația care rulează în producție, nu o variantă a ei.
@@ -17,6 +18,10 @@ export function configureazaAplicatia(app: NestExpressApplication) {
   // Implicit 0: antetul este ignorat. Altfel, oricine apelează serverul direct ar putea
   // pretinde, cu un X-Forwarded-For inventat, că vine de la altă adresă la fiecare cerere.
   app.set('trust proxy', Number(process.env.TRUST_PROXY ?? 0));
+
+  // în producție: doar cererile venite prin proxy-ul Cloudflare (vezi securitate/proxy.ts)
+  const secretProxy = process.env.PROXY_SECRET;
+  if (secretProxy) app.use(doarPrinProxy(secretProxy));
 
   app.setGlobalPrefix('api');
   app.use(cookieParser());

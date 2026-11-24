@@ -6,6 +6,7 @@
 
 interface Mediu {
   API_URL: string // de exemplu https://estudent-api.onrender.com (setat în Cloudflare)
+  PROXY_SECRET?: string // secretul comun cu backendul (în Cloudflare: variabilă criptată)
 }
 
 export async function onRequest({ request, env }: { request: Request; env: Mediu }): Promise<Response> {
@@ -16,6 +17,8 @@ export async function onRequest({ request, env }: { request: Request; env: Mediu
   // adresa IP reală a vizitatorului (pentru limitarea cererilor); suprascriem orice
   // X-Forwarded-For trimis de client, ca să nu poată pretinde o altă adresă
   antete.set('X-Forwarded-For', request.headers.get('CF-Connecting-IP') ?? '')
+  // dovada pentru backend că cererea vine prin proxy (suprascrie orice valoare trimisă de client)
+  if (env.PROXY_SECRET) antete.set('X-Proxy-Secret', env.PROXY_SECRET)
 
   return fetch(tinta, {
     method: request.method,

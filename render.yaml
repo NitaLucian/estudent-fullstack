@@ -19,6 +19,8 @@ services:
         value: "true"
       - key: TRUST_PROXY # câte proxy-uri sunt în fața serverului: Cloudflare + Render
         value: "2"
+      - key: PROXY_SECRET # același șir ca în Cloudflare Pages (variabilă criptată)
+        sync: false
       - key: APP_URL # adresa frontendului (Cloudflare Pages), folosită în emailuri
         sync: false
       - key: S3_ENDPOINT # Cloudflare R2: https://<id-cont>.r2.cloudflarestorage.com

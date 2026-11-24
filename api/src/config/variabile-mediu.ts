@@ -83,6 +83,11 @@ class VariabileMediu {
   @IsOptional()
   @IsUrl({ require_tld: false }, { message: 'APP_URL trebuie să fie o adresă web' })
   APP_URL: string = 'http://localhost:5173';
+
+  // secretul comun cu proxy-ul din fața serverului (opțional; în producție, obligatoriu)
+  @IsOptional()
+  @MinLength(32, { message: 'PROXY_SECRET trebuie să aibă cel puțin 32 de caractere' })
+  PROXY_SECRET?: string;
 }
 
 // Funcția primită de ConfigModule: verifică variabilele citite din mediu și din .env
