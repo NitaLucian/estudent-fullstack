@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, HttpCode, HttpStatus, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
-import { CreateInscriereDto, UpdateInscriereDto } from './dto/inscriere.dto.js';
+import { CreateInscriereDto, PromovareDto, UpdateInscriereDto } from './dto/inscriere.dto.js';
 import { InscrieriService } from './inscrieri.service.js';
 
 // /api/inscrieri – înscrierea unui student într-o grupă, într-un an universitar
@@ -10,6 +10,12 @@ export class InscrieriController {
   @Post()
   create(@Body() date: CreateInscriereDto) {
     return this.service.create(date);
+  }
+
+  // POST /api/inscrieri/promovare – întreaga grupă trece în anul următor
+  @Post('promovare')
+  promoveaza(@Body() date: PromovareDto) {
+    return this.service.promoveaza(date);
   }
 
   @Patch(':id')

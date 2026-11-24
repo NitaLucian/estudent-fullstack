@@ -1,7 +1,7 @@
 import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
 import { AniUniversitariService } from '../ani/ani-universitari.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
-import { CreateInscriereDto, UpdateInscriereDto } from './dto/inscriere.dto.js';
+import { CreateInscriereDto, PromovareDto, UpdateInscriereDto } from './dto/inscriere.dto.js';
 
 @Injectable()
 export class InscrieriService {
@@ -28,6 +28,36 @@ export class InscrieriService {
       );
     }
     return this.prisma.inscriere.create({ data: { studentId: date.studentId, grupaId: date.grupaId, anUniversitarId } });
+  }
+
+  // Promovarea unei grupe: totul sau nimic. Dacă un singur student este deja înscris
+  // în anul destinație, tranzacția se anulează și nu se creează nicio înscriere.
+  async promoveaza(date: PromovareDto) {
+    const anSursaId = await this.ani.idSauCurent(date.anSursaId);
+    const anDestinatieId = await this.ani.idSauCurent(date.anDestinatieId);
+    if (anSursaId === anDestinatieId) throw new BadRequestException('Anul destinație trebuie să fie altul decât anul sursă');
+    await this.verificaGrupa(date.grupaSursaId);
+    await this.verificaGrupa(date.grupaDestinatieId);
+
+    return this.prisma.$transaction(async (tx) => {
+      const sursa = await tx.inscriere.findMany({
+        where: { grupaId: date.grupaSursaId, anUniversitarId: anSursaId },
+        select: { studentId: true },
+      });
+      if (sursa.length === 0) throw new BadRequestException('Grupa sursă nu are studenți în anul ales');
+
+      const dejaInscrisi = await tx.inscriere.count({
+        where: { anUniversitarId: anDestinatieId, studentId: { in: sursa.map((s) => s.studentId) } },
+      });
+      if (dejaInscrisi > 0) {
+        throw new ConflictException(`${dejaInscrisi} studenți sunt deja înscriși în anul destinație; nu s-a promovat nimeni`);
+      }
+
+      const { count } = await tx.inscriere.createMany({
+        data: sursa.map((s) => ({ studentId: s.studentId, grupaId: date.grupaDestinatieId, anUniversitarId: anDestinatieId })),
+      });
+      return { promovati: count };
+    });
   }
 
   // mutarea în altă grupă (transfer)

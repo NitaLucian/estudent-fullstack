@@ -18,3 +18,20 @@ export class UpdateInscriereDto {
   @IsInt({ message: 'Alegeți grupa' })
   grupaId: number;
 }
+
+// Promovarea: toți studenții din grupa sursă (în anul ei) trec în grupa destinație, în alt an
+export class PromovareDto {
+  @IsInt({ message: 'Alegeți grupa sursă' })
+  grupaSursaId: number;
+
+  // lipsă = anul universitar curent
+  @IsOptional()
+  @IsInt()
+  anSursaId?: number;
+
+  @IsInt({ message: 'Alegeți grupa destinație' })
+  grupaDestinatieId: number;
+
+  @IsInt({ message: 'Alegeți anul universitar destinație' })
+  anDestinatieId: number;
+}
