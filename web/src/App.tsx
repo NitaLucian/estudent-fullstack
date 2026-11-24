@@ -4,6 +4,7 @@ import RutaProtejata from './auth/RutaProtejata'
 import Layout from './components/Layout'
 import AcasaPage from './pages/AcasaPage'
 import AniUniversitariPage from './pages/AniUniversitariPage'
+import ConturiPage from './pages/ConturiPage'
 import DisciplinePage from './pages/DisciplinePage'
 import GrupePage from './pages/GrupePage'
 import LoginPage from './pages/LoginPage'
@@ -42,6 +43,7 @@ export default function App() {
             <Route path="studenti/:id/editare" element={<StudentFormPage />} />
             <Route path="profesori" element={<ProfesoriPage />} />
             <Route path="ani-universitari" element={<AniUniversitariPage />} />
+            <Route path="conturi" element={<ConturiPage />} />
           </Route>
 
           <Route path="*" element={<NotFoundPage />} />

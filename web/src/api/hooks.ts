@@ -268,3 +268,20 @@ export function useStergePredare(profesorId: number) {
     },
   })
 }
+
+// ---------- conturi (doar administrator) ----------
+export function useConturi(rol?: 'ADMIN' | 'PROFESOR' | 'STUDENT', cauta?: string) {
+  return useQuery({
+    queryKey: ['conturi', { rol, cauta }],
+    queryFn: () => date(client.GET('/api/utilizatori', { params: { query: { rol, cauta } } })),
+  })
+}
+
+export function useSeteazaActiv() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, activ }: { id: number; activ: boolean }) =>
+      date(client.PATCH('/api/utilizatori/{id}/activ', { params: { path: { id } }, body: { activ } })),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['conturi'] }),
+  })
+}

@@ -11,6 +11,7 @@ import { PrismaModule } from './prisma/prisma.module.js';
 import { ProfesoriModule } from './profesori/profesori.module.js';
 import { SpecializariModule } from './specializari/specializari.module.js';
 import { StudentiModule } from './studenti/studenti.module.js';
+import { UtilizatoriModule } from './utilizatori/utilizatori.module.js';
 
 // Modulul rădăcină: lista tuturor componentelor aplicației.
 @Module({
@@ -26,6 +27,7 @@ import { StudentiModule } from './studenti/studenti.module.js';
     InscrieriModule,
     DisciplineModule,
     ProfesoriModule,
+    UtilizatoriModule,
   ],
   controllers: [HealthController],
   providers: [],

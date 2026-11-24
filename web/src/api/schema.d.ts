@@ -372,6 +372,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/utilizatori": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["UtilizatoriController_findAll"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/utilizatori/{id}/activ": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["UtilizatoriController_seteazaActiv"];
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -692,6 +724,17 @@ export interface components {
             profesorId: number;
             disciplinaId: number;
             anUniversitarId: number;
+        };
+        Cont: {
+            rol: components["schemas"]["Rol"];
+            id: number;
+            email: string;
+            activ: boolean;
+            /** Format: date-time */
+            ultimaAutentificare: string | null;
+        };
+        StareContDto: {
+            activ: boolean;
         };
     };
     responses: never;
@@ -1557,6 +1600,53 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    UtilizatoriController_findAll: {
+        parameters: {
+            query?: {
+                rol?: "ADMIN" | "PROFESOR" | "STUDENT";
+                cauta?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Cont"][];
+                };
+            };
+        };
+    };
+    UtilizatoriController_seteazaActiv: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StareContDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Cont"];
+                };
             };
         };
     };
