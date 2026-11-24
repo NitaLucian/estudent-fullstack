@@ -23,6 +23,11 @@ export interface Grupa {
   specializare: Pick<Specializare, 'id' | 'cod' | 'denumire'>
 }
 
+// Grupa, așa cum o trimite GET /api/grupe/:id: cu lista studenților
+export interface GrupaCuStudenti extends Grupa {
+  studenti: Pick<Student, 'id' | 'nrMatricol' | 'nume' | 'prenume' | 'email'>[]
+}
+
 export interface Student {
   id: number
   nrMatricol: string

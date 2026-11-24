@@ -1,6 +1,7 @@
 import { Route, Routes } from 'react-router'
 import Layout from './components/Layout'
 import AcasaPage from './pages/AcasaPage'
+import GrupaPage from './pages/GrupaPage'
 import GrupePage from './pages/GrupePage'
 import NotFoundPage from './pages/NotFoundPage'
 import SpecializariPage from './pages/SpecializariPage'
@@ -17,6 +18,7 @@ export default function App() {
         <Route index element={<AcasaPage />} />
         <Route path="specializari" element={<SpecializariPage />} />
         <Route path="grupe" element={<GrupePage />} />
+        <Route path="grupe/:id" element={<GrupaPage />} />
         <Route path="studenti" element={<StudentiPage />} />
         <Route path="studenti/nou" element={<StudentFormPage />} />
         <Route path="studenti/:id" element={<StudentPage />} />

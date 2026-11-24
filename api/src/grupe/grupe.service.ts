@@ -20,7 +20,17 @@ export class GrupeService {
   }
 
   async findOne(id: number) {
-    const grupa = await this.prisma.grupa.findUnique({ where: { id }, include: cuSpecializare });
+    // grupa, cu specializarea și cu studenții ei, în ordine alfabetică
+    const grupa = await this.prisma.grupa.findUnique({
+      where: { id },
+      include: {
+        ...cuSpecializare,
+        studenti: {
+          select: { id: true, nrMatricol: true, nume: true, prenume: true, email: true },
+          orderBy: [{ nume: 'asc' }, { prenume: 'asc' }],
+        },
+      },
+    });
     if (!grupa) throw new NotFoundException(`Grupa ${id} nu există`);
     return grupa;
   }

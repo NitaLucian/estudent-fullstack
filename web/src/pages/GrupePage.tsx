@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router'
 import { citeste, creeaza, mesajeDin, modifica, sterge } from '../api'
 import GrupaForm from '../components/GrupaForm'
 import MesajEroare from '../components/MesajEroare'
@@ -94,7 +95,7 @@ export default function GrupePage() {
         <tbody>
           {grupe.map((g) => (
             <tr key={g.id}>
-              <td><strong>{g.cod}</strong></td>
+              <td><strong><Link to={`/grupe/${g.id}`}>{g.cod}</Link></strong></td>
               <td>{g.specializare.cod} – {g.specializare.denumire}</td>
               <td className="numar">{g.an}</td>
               <td className="actiuni">
