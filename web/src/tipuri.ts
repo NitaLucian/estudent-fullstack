@@ -23,6 +23,33 @@ export interface Grupa {
   specializare: Pick<Specializare, 'id' | 'cod' | 'denumire'>
 }
 
+export interface Student {
+  id: number
+  nrMatricol: string
+  nume: string
+  prenume: string
+  email: string
+  dataNasterii: string | null // text ISO: „2006-03-15T00:00:00.000Z”
+  grupaId: number | null
+  grupa: {
+    id: number
+    cod: string
+    an: number
+    specializare: { id: number; cod: string }
+  } | null
+}
+
+// O pagină dintr-o listă paginată, așa cum o trimite API-ul.
+export interface Pagina<T> {
+  date: T[]
+  total: number
+  pagina: number
+  perPagina: number
+}
+
 // Datele trimise la creare/modificare: fără id și fără câmpurile calculate de server.
+export type StudentDate = Pick<Student, 'nrMatricol' | 'nume' | 'prenume' | 'email' | 'grupaId'> & {
+  dataNasterii: string | null // „2006-03-15” sau null
+}
 export type SpecializareDate = Pick<Specializare, 'cod' | 'denumire'>
 export type GrupaDate = Pick<Grupa, 'cod' | 'an' | 'specializareId'>

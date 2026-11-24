@@ -1,39 +1,28 @@
-import { useState } from 'react'
+import { Route, Routes } from 'react-router'
+import Layout from './components/Layout'
 import AcasaPage from './pages/AcasaPage'
 import GrupePage from './pages/GrupePage'
+import NotFoundPage from './pages/NotFoundPage'
 import SpecializariPage from './pages/SpecializariPage'
+import StudentFormPage from './pages/StudentFormPage'
+import StudentiPage from './pages/StudentiPage'
+import StudentPage from './pages/StudentPage'
 
-// Paginile aplicației. Tipul Pagina acceptă doar aceste valori.
-type Pagina = 'acasa' | 'specializari' | 'grupe'
-
-// Meniul: o listă de perechi (pagină, etichetă), afișată cu map()
-const meniu: { pagina: Pagina; eticheta: string }[] = [
-  { pagina: 'acasa', eticheta: 'Acasă' },
-  { pagina: 'specializari', eticheta: 'Specializări' },
-  { pagina: 'grupe', eticheta: 'Grupe' },
-]
-
+// Harta aplicației: fiecare adresă are pagina ei.
+// Toate paginile sunt desenate în interiorul componentei Layout (bara de sus + conținut).
 export default function App() {
-  const [pagina, setPagina] = useState<Pagina>('acasa')
-
   return (
-    <>
-      <header className="bara-sus">
-        <span className="logo">eStudent</span>
-        <nav className="meniu">
-          {meniu.map((m) => (
-            <button key={m.pagina} className={pagina === m.pagina ? 'activ' : ''} onClick={() => setPagina(m.pagina)}>
-              {m.eticheta}
-            </button>
-          ))}
-        </nav>
-      </header>
-
-      <main className="continut">
-        {pagina === 'acasa' && <AcasaPage />}
-        {pagina === 'specializari' && <SpecializariPage />}
-        {pagina === 'grupe' && <GrupePage />}
-      </main>
-    </>
+    <Routes>
+      <Route element={<Layout />}>
+        <Route index element={<AcasaPage />} />
+        <Route path="specializari" element={<SpecializariPage />} />
+        <Route path="grupe" element={<GrupePage />} />
+        <Route path="studenti" element={<StudentiPage />} />
+        <Route path="studenti/nou" element={<StudentFormPage />} />
+        <Route path="studenti/:id" element={<StudentPage />} />
+        <Route path="studenti/:id/editare" element={<StudentFormPage />} />
+        <Route path="*" element={<NotFoundPage />} />
+      </Route>
+    </Routes>
   )
 }

@@ -53,11 +53,21 @@ button {
 }
 button:hover { background: var(--albastru-deschis); }
 
-/* meniul din bara de sus */
+/* meniul din bara de sus (legături NavLink; pagina curentă are clasa „active”) */
 .meniu { display: flex; gap: 0.25rem; margin-left: 1rem; }
-.meniu button { background: transparent; border-color: transparent; color: #fff; opacity: 0.85; }
-.meniu button:hover { background: rgba(255, 255, 255, 0.12); opacity: 1; }
-.meniu button.activ { background: rgba(255, 255, 255, 0.2); opacity: 1; font-weight: 600; }
+.meniu a { color: #fff; text-decoration: none; padding: 0.45rem 1rem; border-radius: 6px; opacity: 0.85; }
+.meniu a:hover { background: rgba(255, 255, 255, 0.12); opacity: 1; }
+.meniu a.active { background: rgba(255, 255, 255, 0.2); opacity: 1; font-weight: 600; }
+
+/* legături */
+a { color: var(--albastru-deschis); }
+/* o legătură care arată ca un buton */
+a.buton {
+  display: inline-block; text-decoration: none; padding: 0.45rem 1rem; border-radius: 6px;
+  border: 1px solid var(--albastru); background: var(--albastru); color: #fff;
+}
+a.buton:hover { background: var(--albastru-deschis); }
+a.buton.secundar { background: #fff; color: var(--albastru); }
 
 /* tabele de date */
 .tabel { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid var(--chenar); }
@@ -95,4 +105,10 @@ button:disabled { opacity: 0.6; cursor: default; }
 .tabel .actiuni { text-align: right; white-space: nowrap; width: 1%; }
 .tabel .actiuni button + button { margin-left: 0.4rem; }
 
-.bara-filtre { margin-bottom: 0.75rem; color: var(--text-slab); }
+.bara-filtre { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem; color: var(--text-slab); }
+.bara-filtre input { min-width: 16rem; }
+
+/* paginarea de sub tabel */
+.paginare { display: flex; justify-content: space-between; align-items: center; margin-top: 0.75rem; }
+.paginare .butoane { align-items: center; }
+.tabel td.gol { text-align: center; color: var(--text-slab); padding: 1.5rem; }
