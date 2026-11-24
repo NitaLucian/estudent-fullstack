@@ -8,7 +8,24 @@ interface StareServer {
   ora: string
 }
 
+// Forma răspunsului trimis de GET /api/despre
+interface DespreAplicatie {
+  aplicatie: string
+  descriere: string
+  tehnologii: string[]
+}
+
 export default function App() {
+  const [despre, setDespre] = useState<DespreAplicatie | null>(null)
+
+  // [] = o singură cerere, la prima afișare (datele nu se schimbă)
+  useEffect(() => {
+    fetch('/api/despre')
+      .then((r) => r.json())
+      .then(setDespre)
+      .catch(() => setDespre(null))
+  }, [])
+
   // Starea componentei: ce a răspuns serverul, eventuala eroare
   // și un contor care crește la fiecare clic pe „Verifică din nou”.
   const [stare, setStare] = useState<StareServer | null>(null)
@@ -67,6 +84,18 @@ export default function App() {
           {!stare && !eroare && <p>Se verifică…</p>}
           <button onClick={() => setNrVerificari(nrVerificari + 1)}>Verifică din nou</button>
         </section>
+
+        {despre && (
+          <section className="card">
+            <h2>Despre {despre.aplicatie}</h2>
+            <p>{despre.descriere}</p>
+            <ul>
+              {despre.tehnologii.map((t) => (
+                <li key={t}>{t}</li>
+              ))}
+            </ul>
+          </section>
+        )}
       </main>
     </>
   )
