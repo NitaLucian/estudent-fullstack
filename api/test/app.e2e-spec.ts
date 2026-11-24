@@ -134,6 +134,19 @@ describe('eStudent API (e2e)', () => {
     });
   });
 
+  describe('rapoarte', () => {
+    it('administratorul descarcă grupele în format CSV', async () => {
+      const r = await http().get('/api/rapoarte/grupe.csv').set(cuToken('admin')).expect(200);
+      expect(r.headers['content-type']).toMatch(/^text\/csv/);
+      expect(r.headers['content-disposition']).toContain('grupe.csv');
+      expect(r.text.charCodeAt(0)).toBe(0xfeff); // BOM
+      expect(r.text.slice(1).split('\r\n')[0]).toBe('Grupa;Specializare;An;Nr. matricol;Nume;Prenume;Email');
+    });
+
+    it('studentul nu are acces la rapoarte (403)', () =>
+      http().get('/api/rapoarte/grupe.csv').set(cuToken('student')).expect(403));
+  });
+
   // ultimul: după el, adresa IP a testelor este blocată un minut la login
   describe('limitarea cererilor', () => {
     it('după prea multe încercări de login răspunde 429', async () => {

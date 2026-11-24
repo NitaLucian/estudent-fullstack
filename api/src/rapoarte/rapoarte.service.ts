@@ -2,14 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { AniUniversitariService } from '../ani/ani-universitari.service.js';
 import { Prisma } from '../generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { documentCsv } from './csv.js';
 import { FiltreRaportDto } from './dto/filtre-raport.dto.js';
 import { LocClasament, NumarNote, PromovabilitateDisciplina } from './raport.entity.js';
-
-// Un câmp CSV: între ghilimele dacă conține separatorul, ghilimele sau rând nou
-function campCsv(valoare: string | number | null): string {
-  const text = valoare === null ? '' : String(valoare);
-  return /[;"\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
-}
 
 @Injectable()
 export class RapoarteService {
@@ -118,8 +113,6 @@ export class RapoarteService {
       i.grupa.cod, i.grupa.specializare.cod, i.grupa.anStudiu.numar,
       i.student.nrMatricol, i.student.nume, i.student.prenume, i.student.email,
     ]);
-    // „;” ca separator (Excel în română) și BOM la început, ca diacriticele să fie citite corect
-    const BOM = String.fromCharCode(0xfeff);
-    return BOM + [antet, ...randuri].map((r) => r.map(campCsv).join(';')).join('\r\n');
+    return documentCsv([antet, ...randuri]); // vezi csv.ts: BOM, „;”, CRLF, fără formule
   }
 }
