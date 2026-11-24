@@ -6,7 +6,7 @@ import { reimprospateaza, tokenCurent } from './sesiune'
 
 // Fiecare cerere primește antetul Authorization cu token-ul de acces.
 // Dacă serverul răspunde 401 (token expirat), reîmprospătăm sesiunea o dată și repetăm cererea.
-async function fetchAutentificat(cerere: Request): Promise<Response> {
+export async function fetchAutentificat(cerere: Request): Promise<Response> {
   const copie = cerere.clone() // corpul unei cereri se poate citi o singură dată
   const trimite = (c: Request) => {
     const token = tokenCurent()

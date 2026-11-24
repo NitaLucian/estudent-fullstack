@@ -7,6 +7,7 @@ import type {
   DisciplinaDate, GrupaDate, ProfesorDate, SpecializareDate, StudentDate,
 } from '../tipuri'
 import { client, date } from './client'
+import { incarcaFisier } from './fisiere'
 
 // ---------- starea serverului ----------
 export function useStareServer() {
@@ -339,5 +340,46 @@ export function useClasament(filtre: FiltreRaport) {
   return useQuery({
     queryKey: ['rapoarte', 'clasament', filtre],
     queryFn: () => date(client.GET('/api/rapoarte/clasament', { params: { query: filtre } })),
+  })
+}
+
+// ---------- fișiere ----------
+export function useFotografie(studentId: number) {
+  return useQuery({
+    queryKey: ['fotografie', studentId],
+    queryFn: () => date(client.GET('/api/studenti/{id}/fotografie', { params: { path: { id: studentId } } })),
+    retry: false, // 404 = studentul nu are fotografie, nu o eroare de rețea
+    staleTime: 4 * 60 * 1000, // adresa presemnată expiră după 5 minute: o cerem din nou după 4
+  })
+}
+
+export function useIncarcaFotografie(studentId: number) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (fisier: File) => incarcaFisier(`/api/studenti/${studentId}/fotografie`, fisier),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['fotografie', studentId] }),
+  })
+}
+
+export function useDocumente(studentId: number) {
+  return useQuery({
+    queryKey: ['documente', studentId],
+    queryFn: () => date(client.GET('/api/studenti/{id}/documente', { params: { path: { id: studentId } } })),
+  })
+}
+
+export function useIncarcaDocument(studentId: number) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (fisier: File) => incarcaFisier(`/api/studenti/${studentId}/documente`, fisier),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['documente', studentId] }),
+  })
+}
+
+export function useStergeDocument(studentId: number) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: number) => date(client.DELETE('/api/documente/{id}', { params: { path: { id } } })),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['documente', studentId] }),
   })
 }

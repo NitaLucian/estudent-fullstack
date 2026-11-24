@@ -33,6 +33,27 @@ class VariabileMediu {
   @IsOptional()
   @IsBooleanString({ message: 'COOKIE_SECURE este true sau false' })
   COOKIE_SECURE: string = 'false';
+
+  // Stocarea fișierelor (orice serviciu compatibil S3)
+  @IsString()
+  @IsNotEmpty({ message: 'S3_ENDPOINT lipsește (vezi .env.example)' })
+  S3_ENDPOINT: string;
+
+  @IsOptional()
+  @IsString()
+  S3_REGION: string = 'us-east-1';
+
+  @IsString()
+  @IsNotEmpty({ message: 'S3_BUCKET lipsește' })
+  S3_BUCKET: string;
+
+  @IsString()
+  @IsNotEmpty({ message: 'S3_ACCESS_KEY lipsește' })
+  S3_ACCESS_KEY: string;
+
+  @IsString()
+  @IsNotEmpty({ message: 'S3_SECRET_KEY lipsește' })
+  S3_SECRET_KEY: string;
 }
 
 // Funcția primită de ConfigModule: verifică variabilele citite din mediu și din .env

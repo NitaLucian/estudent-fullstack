@@ -5,7 +5,7 @@ bază de date PostgreSQL în Docker (`docker-compose.yml`).
 
 ## Prima pornire
 
-    docker compose up -d
+    docker compose up -d          # PostgreSQL (portul 5433) și stocarea de fișiere S3 (portul 8333)
 
 Backend (primul terminal):
 

@@ -51,14 +51,16 @@ model Grupa {
 
 // Un student. Grupa în care se află într-un an universitar este dată de înscrieri.
 model Student {
-  id           Int         @id @default(autoincrement())
-  nrMatricol   String      @unique @map("nr_matricol") @db.VarChar(12)
-  nume         String      @db.VarChar(50)
-  prenume      String      @db.VarChar(50)
-  email        String      @unique @db.VarChar(100)
-  dataNasterii DateTime?   @map("data_nasterii") @db.Date
-  inscrieri    Inscriere[]
-  utilizator   Utilizator?
+  id              Int         @id @default(autoincrement())
+  nrMatricol      String      @unique @map("nr_matricol") @db.VarChar(12)
+  nume            String      @db.VarChar(50)
+  prenume         String      @db.VarChar(50)
+  email           String      @unique @db.VarChar(100)
+  dataNasterii    DateTime?   @map("data_nasterii") @db.Date
+  fotografieCheie String?     @map("fotografie_cheie") // cheia fișierului în stocarea S3
+  inscrieri       Inscriere[]
+  utilizator      Utilizator?
+  documente       Document[]
 
   @@index([nume, prenume])
   @@map("studenti")
@@ -177,6 +179,7 @@ model Utilizator {
   sesiuni             SesiuneRefresh[]
   noteModificate      Nota[]
   istoricNote         IstoricNota[]
+  documenteIncarcate  Document[]
 
   @@map("utilizatori")
 }
@@ -228,4 +231,22 @@ model IstoricNota {
 
   @@index([inscriereId, disciplinaId])
   @@map("istoric_note")
+}
+
+// Un document al studentului (adeverință, certificat ...). Conținutul este în stocarea S3;
+// în baza de date păstrăm doar descrierea și cheia lui.
+model Document {
+  id           Int         @id @default(autoincrement())
+  studentId    Int         @map("student_id")
+  student      Student     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  nume         String      @db.VarChar(200) // numele original al fișierului
+  cheie        String      @unique @db.VarChar(300) // cheia obiectului în stocare
+  tip          String      @db.VarChar(100) // tipul MIME, de ex. application/pdf
+  marime       Int // în octeți
+  incarcatDeId Int?        @map("incarcat_de_id")
+  incarcatDe   Utilizator? @relation(fields: [incarcatDeId], references: [id], onDelete: SetNull)
+  incarcatLa   DateTime    @default(now()) @map("incarcat_la") @db.Timestamptz(3)
+
+  @@index([studentId])
+  @@map("documente")
 }

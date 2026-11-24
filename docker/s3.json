@@ -1,0 +1,9 @@
+{
+  "identities": [
+    {
+      "name": "estudent",
+      "credentials": [{ "accessKey": "estudent", "secretKey": "estudent_dev_secret" }],
+      "actions": ["Admin", "Read", "Write", "List", "Tagging"]
+    }
+  ]
+}

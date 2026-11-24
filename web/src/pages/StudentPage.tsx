@@ -5,6 +5,8 @@ import {
   useAniUniversitari, useCreeazaInscriere, useGrupe, useStergeInscriere, useStergeStudent, useStudent,
 } from '../api/hooks'
 import { usePermisiuni } from '../auth/permisiuni'
+import DocumenteStudent from '../components/DocumenteStudent'
+import FotografieStudent from '../components/FotografieStudent'
 import MesajEroare from '../components/MesajEroare'
 import { formatData } from '../format'
 
@@ -20,7 +22,9 @@ export default function StudentPage() {
   const stergereInscriere = useStergeInscriere()
   const [grupaNoua, setGrupaNoua] = useState(0)
   const [anNou, setAnNou] = useState(0)
-  const { esteAdmin, esteStudent } = usePermisiuni()
+  const { esteAdmin, esteStudent, studentId } = usePermisiuni()
+  // fișierele le modifică administratorul și studentul însuși
+  const poateModificaFisiere = esteAdmin || (esteStudent && studentId === id)
 
   async function stergeStudentul() {
     if (!student || !window.confirm(`Ștergeți studentul ${student.nume} ${student.prenume}?`)) return
@@ -52,18 +56,21 @@ export default function StudentPage() {
                 </div>
               )}
             </div>
-            <dl className="detalii">
-              <dt>Nr. matricol</dt>
-              <dd>{student.nrMatricol}</dd>
-              <dt>Email</dt>
-              <dd>{student.email}</dd>
-              <dt>Data nașterii</dt>
-              <dd>{formatData(student.dataNasterii)}</dd>
-              <dt>Note</dt>
-              <dd><Link to={`/studenti/${student.id}/note`}>situația școlară</Link></dd>
-              <dt>Grupa (anul curent)</dt>
-              <dd>{student.grupa ? `${student.grupa.cod} (anul ${student.grupa.an}, ${student.grupa.specializare.cod})` : '–'}</dd>
-            </dl>
+            <div className="fisa">
+              <FotografieStudent studentId={student.id} poateModifica={poateModificaFisiere} />
+              <dl className="detalii">
+                <dt>Nr. matricol</dt>
+                <dd>{student.nrMatricol}</dd>
+                <dt>Email</dt>
+                <dd>{student.email}</dd>
+                <dt>Data nașterii</dt>
+                <dd>{formatData(student.dataNasterii)}</dd>
+                <dt>Note</dt>
+                <dd><Link to={`/studenti/${student.id}/note`}>situația școlară</Link></dd>
+                <dt>Grupa (anul curent)</dt>
+                <dd>{student.grupa ? `${student.grupa.cod} (anul ${student.grupa.an}, ${student.grupa.specializare.cod})` : '–'}</dd>
+              </dl>
+            </div>
           </section>
 
           <section className="card">
@@ -110,6 +117,7 @@ export default function StudentPage() {
               </form>
             )}
           </section>
+          <DocumenteStudent studentId={student.id} poateModifica={poateModificaFisiere} />
         </>
       )}
     </>
