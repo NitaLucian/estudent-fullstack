@@ -361,6 +361,15 @@ export function useIncarcaFotografie(studentId: number) {
   })
 }
 
+export function useStergeFotografie(studentId: number) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: () => date(client.DELETE('/api/studenti/{id}/fotografie', { params: { path: { id: studentId } } })),
+    // removeQueries: fotografia nu mai există, nu are rost să o cerem din nou
+    onSuccess: () => qc.removeQueries({ queryKey: ['fotografie', studentId] }),
+  })
+}
+
 export function useDocumente(studentId: number) {
   return useQuery({
     queryKey: ['documente', studentId],

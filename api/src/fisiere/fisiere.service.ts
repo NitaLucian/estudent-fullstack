@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import type { UtilizatorJwt } from '../auth/auth.decorators.js';
 import { PrismaService } from '../prisma/prisma.service.js';
@@ -10,6 +10,7 @@ import { numeSigur, tipDupaContinut } from './tip-fisier.js';
 const TIPURI_FOTOGRAFIE = ['image/jpeg', 'image/png', 'image/webp'];
 const TIPURI_DOCUMENT = ['application/pdf', 'image/jpeg', 'image/png'];
 const EXPIRA_IN = 300; // secunde (5 minute)
+const MAXIM_DOCUMENTE = 10; // pe student
 
 // multer citește numele fișierului ca text latin1; numele trimise de browsere sunt în UTF-8,
 // așa că „Adeverință.pdf” ar apărea cu litere stricate („AdeverinÈ...”). Refacem octeții și îi citim corect.
@@ -52,6 +53,16 @@ export class FisiereService {
     if (vechi.fotografieCheie) await this.stocare.sterge(vechi.fotografieCheie);
   }
 
+  async stergeFotografie(studentId: number, u: UtilizatorJwt) {
+    await this.verificaModificare(studentId, u);
+    const { fotografieCheie } = await this.prisma.student.findUniqueOrThrow({ where: { id: studentId } });
+    if (!fotografieCheie) throw new NotFoundException('Studentul nu are fotografie');
+    // întâi baza de date, apoi fișierul: dacă ștergerea fișierului eșuează, rămâne doar
+    // un obiect nefolosit în stocare, nu o fotografie „lipsă” în fișa studentului
+    await this.prisma.student.update({ where: { id: studentId }, data: { fotografieCheie: null } });
+    await this.stocare.sterge(fotografieCheie);
+  }
+
   async urlFotografie(studentId: number, u: UtilizatorJwt): Promise<AdresaFisier> {
     await this.studenti.findOneVerificat(studentId, u); // 404 / 403
     const { fotografieCheie } = await this.prisma.student.findUniqueOrThrow({ where: { id: studentId } });
@@ -70,6 +81,10 @@ export class FisiereService {
 
   async incarcaDocument(studentId: number, fisier: Express.Multer.File | undefined, u: UtilizatorJwt): Promise<DocumentStudent> {
     await this.verificaModificare(studentId, u);
+    const existente = await this.prisma.document.count({ where: { studentId } });
+    if (existente >= MAXIM_DOCUMENTE) {
+      throw new ConflictException(`Un student poate avea cel mult ${MAXIM_DOCUMENTE} documente; ștergeți unul mai vechi`);
+    }
     const tip = this.verificaTipul(fisier, TIPURI_DOCUMENT);
     const cheie = `studenti/${studentId}/documente/${randomUUID()}.${tip.extensie}`;
     await this.stocare.salveaza(cheie, fisier!.buffer, tip.tip);

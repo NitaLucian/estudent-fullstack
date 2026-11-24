@@ -35,6 +35,12 @@ export class FisiereController {
     return this.service.incarcaFotografie(id, fisier, u);
   }
 
+  @Delete('studenti/:id/fotografie')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  stergeFotografie(@Param('id', ParseIntPipe) id: number, @UtilizatorCurent() u: UtilizatorJwt): Promise<void> {
+    return this.service.stergeFotografie(id, u);
+  }
+
   @Get('studenti/:id/fotografie')
   urlFotografie(@Param('id', ParseIntPipe) id: number, @UtilizatorCurent() u: UtilizatorJwt): Promise<AdresaFisier> {
     return this.service.urlFotografie(id, u);

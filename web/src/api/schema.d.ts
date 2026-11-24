@@ -494,7 +494,7 @@ export interface paths {
         get: operations["FisiereController_urlFotografie"];
         put?: never;
         post: operations["FisiereController_incarcaFotografie"];
-        delete?: never;
+        delete: operations["FisiereController_stergeFotografie"];
         options?: never;
         head?: never;
         patch?: never;
@@ -2066,6 +2066,25 @@ export interface operations {
                 };
             };
         };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    FisiereController_stergeFotografie: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             204: {
                 headers: {
